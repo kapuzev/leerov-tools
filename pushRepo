@@ -11,11 +11,11 @@ git_push() {
     
     # Формируем сообщение коммита
     if [ $# -gt 0 ]; then
-        MESSAGE="$DATE $TIME:
+        MESSAGE="$DATE $TIME: $*
 
 $FILES_LIST"
     else
-        MESSAGE="$DATE $TIME: 
+        MESSAGE="$DATE $TIME: Autocommit
         
 $FILES_LIST"
     fi
