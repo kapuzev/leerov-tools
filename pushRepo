@@ -11,9 +11,13 @@ git_push() {
     
     # Формируем сообщение коммита
     if [ $# -gt 0 ]; then
-        MESSAGE="$DATE $TIME: $*$'\n'$'\n'$FILES_LIST"
+        MESSAGE="$DATE $TIME:
+
+$FILES_LIST"
     else
-        MESSAGE="$DATE $TIME: $'\n'$'\n'$FILES_LIST"
+        MESSAGE="$DATE $TIME: 
+        
+$FILES_LIST"
     fi
     
     nohup git add * > /dev/null 2>&1
