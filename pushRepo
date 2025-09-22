@@ -10,15 +10,10 @@ git_push() {
     FILES_LIST=$(git status --porcelain | awk '{print "- "$2}')
     
     # Формируем сообщение коммита
-    if [ $# -gt 0 ]; then
-        MESSAGE="$DATE $TIME: $*
+    MESSAGE="$DATE $TIME: $*
 
 $FILES_LIST"
-    else
-        MESSAGE="$DATE $TIME: Autocommit
-        
-$FILES_LIST"
-    fi
+
     
     nohup git add * > /dev/null 2>&1
     nohup git commit -m "$MESSAGE" > /dev/null 2>&1
