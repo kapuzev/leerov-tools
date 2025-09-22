@@ -3,8 +3,11 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 source $SCRIPT_DIR/pushRepo
 
+push() {
+    git_push "$@"
+}
+
 # Алиасы
-alias push="git_push"
 alias la="ls -la"
 alias p="bash $SCRIPT_DIR/peer-review.sh"
 alias f="bash $SCRIPT_DIR/clang-format-and-cppcheck.sh"
@@ -31,5 +34,5 @@ code() {
 # Автозагрузка при входе 
 cd "$SCRIPT_DIR"
 chmod +x "$SCRIPT_DIR/pushRepo"
-bash -c "source $SCRIPT_DIR/pushRepo; git_push \"$@\"" >/dev/null 2>&1 & >/dev/null 2>&1 
+bash -c 'source "$0/pushRepo"; git_push "${1:-Autocommit}";' "$SCRIPT_DIR" >/dev/null 2>&1 &
 cd "$CURRENT_DIR"
