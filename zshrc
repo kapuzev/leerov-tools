@@ -27,7 +27,7 @@ code() {
   fi
 }
 
-# Автозагрузка при входе
+# Автозагрузка при входе 
 cd "$SCRIPT_DIR"
 chmod +x "$SCRIPT_DIR/pushRepo"
 git_push "$@" &
