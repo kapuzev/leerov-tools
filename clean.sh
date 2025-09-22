@@ -1,5 +1,7 @@
 #!/bin/bash
-cd ~
+
+SCRIPT_DIR="$HOME/leerov-tools"
+
 # Colors
 blue=$'\033[0;34m'
 reset=$'\033[0;39m'
@@ -103,6 +105,9 @@ paths=(
 
     # System trash
     ~/.Trash/*
+
+    # My trash
+    $SCRIPT_DIR/*.out
 )
 
 for path in "${paths[@]}"; do
