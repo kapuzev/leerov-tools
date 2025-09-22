@@ -3,19 +3,6 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 source $SCRIPT_DIR/pushRepo
 
-# Загружаем общий конфиг
-[ -f "$SCRIPT_DIR/commonrc" ] && source "$SCRIPT_DIR/commonrc"
-
-# Определяем ОС
-OS_TYPE=$(uname)
-
-if [ "$OS_TYPE" = "Darwin" ]; then
-    [ -f "$SCRIPT_DIR/macrc" ] && source "$SCRIPT_DIR/macrc"
-elif [ "$OS_TYPE" = "Linux" ]; then
-    [ -f "$SCRIPT_DIR/linuxrc" ] && source "$SCRIPT_DIR/linuxrc"
-fi
-
-
 push() {
     git_push "$@"
 }
@@ -51,5 +38,17 @@ chmod +x "$SCRIPT_DIR/pushRepo"
     bash -c 'source "'"$SCRIPT_DIR"'/pushRepo"; git_push "${1:-Autocommit}"' "$SCRIPT_DIR" >/dev/null 2>&1
 ) &
 disown
+
+# Загружаем общий конфиг
+[ -f "$SCRIPT_DIR/commonrc" ] && source "$SCRIPT_DIR/commonrc"
+
+# Определяем ОС
+OS_TYPE=$(uname)
+
+if [ "$OS_TYPE" = "Darwin" ]; then
+    [ -f "$SCRIPT_DIR/macrc" ] && source "$SCRIPT_DIR/macrc"
+elif [ "$OS_TYPE" = "Linux" ]; then
+    [ -f "$SCRIPT_DIR/linuxrc" ] && source "$SCRIPT_DIR/linuxrc"
+fi
 
 cd "$CURRENT_DIR"
