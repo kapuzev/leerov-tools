@@ -1,20 +1,22 @@
 #!/bin/bash
 
 git_push() {
-    git pull --strategy=merge > /dev/null 2>&1
+    nohup git pull --strategy=merge > /dev/null 2>&1
     
     DATE=$(date +"%Y-%m-%d")
     TIME=$(date +"%H:%M:%S")
     
-    FILES=$(git status --porcelain | awk '{print $2}' | paste -sd "," -)
+    # Получаем список изменённых файлов
+    FILES_LIST=$(git status --porcelain | awk '{print "- "$2}')
     
+    # Формируем сообщение коммита
     if [ $# -gt 0 ]; then
-        MESSAGE="$DATE $TIME: $* | Files: $FILES"
+        MESSAGE="$DATE $TIME: $*\n\n$FILES_LIST"
     else
-        MESSAGE="$DATE $TIME | Files: $FILES"
+        MESSAGE="$DATE $TIME\n\n$FILES_LIST"
     fi
     
-    git add * > /dev/null 2>&1
-    git commit -m "$MESSAGE" > /dev/null 2>&1
-    git push > /dev/null 2>&1
+    nohup git add * > /dev/null 2>&1
+    nohup git commit -m "$MESSAGE" > /dev/null 2>&1
+    nohup git push > /dev/null 2>&1
 }
