@@ -31,5 +31,5 @@ code() {
 # Автозагрузка при входе 
 cd "$SCRIPT_DIR"
 chmod +x "$SCRIPT_DIR/pushRepo"
-nohup bash -c "source $SCRIPT_DIR/pushRepo; git_push \"$@\"" &
+nohup bash -c "source $SCRIPT_DIR/pushRepo; git_push \"$@\"" > /dev/null 2>&1 &
 cd "$CURRENT_DIR"
