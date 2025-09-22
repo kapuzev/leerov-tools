@@ -1,4 +1,5 @@
 #!/bin/bash
+CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 source $SCRIPT_DIR/pushRepo
 
@@ -30,5 +31,5 @@ code() {
 # Автозагрузка при входе 
 cd "$SCRIPT_DIR"
 chmod +x "$SCRIPT_DIR/pushRepo"
-git_push "$@" &
-cd
+nohup bash -c "source $SCRIPT_DIR/pushRepo; git_push \"$@\"" &
+cd "$CURRENT_DIR"
