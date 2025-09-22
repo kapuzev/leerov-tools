@@ -1,24 +1,17 @@
 #!/bin/bash
 
-# Функция для выполнения git операций
 git_operations() {
-    # Выполняем последовательно
     git pull --strategy=merge > /dev/null 2>&1
     
     DATE=$(date +"%Y-%m-%d")
     TIME=$(date +"%H:%M:%S")
-    if [ $# -gt 0 ]; then
-        MESSAGE="$DATE $TIME: $*"
-    else
-        MESSAGE="$DATE $TIME"
-    fi
-
-    # Получаем список измененных файлов
-    CHANGED_FILES=$(git diff --name-only --cached | tr '\n' ', ' | sed 's/, $//')
     
-    # Добавляем измененные файлы к сообщению
-    if [ -n "$CHANGED_FILES" ]; then
-        MESSAGE="$MESSAGE | Измененные файлы: $CHANGED_FILES"
+    FILES=$(git status --porcelain | awk '{print $2}' | paste -sd "," -)
+    
+    if [ $# -gt 0 ]; then
+        MESSAGE="$DATE $TIME: $* | Files: $FILES"
+    else
+        MESSAGE="$DATE $TIME | Files: $FILES"
     fi
     
     git add * > /dev/null 2>&1
@@ -26,5 +19,4 @@ git_operations() {
     git push > /dev/null 2>&1
 }
 
-# Запускаем функцию в фоне
 git_operations "$@" &
