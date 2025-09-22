@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git_operations() {
+git_push() {
     git pull --strategy=merge > /dev/null 2>&1
     
     DATE=$(date +"%Y-%m-%d")
@@ -19,4 +19,4 @@ git_operations() {
     git push > /dev/null 2>&1
 }
 
-git_operations "$@" &
+git_push "$@" &
