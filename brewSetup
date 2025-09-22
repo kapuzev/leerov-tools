@@ -14,5 +14,3 @@ function brewSetup {
   brew install lcov
  fi
 }
-
-brewSetup
