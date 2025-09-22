@@ -1,0 +1,103 @@
+-- Функция для открытия системных настроек
+on openSystemPreferences(paneID, anchorName)
+    try
+        if anchorName is not "" then
+            do shell script "open 'x-apple.systempreferences:" & paneID & "?" & anchorName & "'"
+        else
+            do shell script "open 'x-apple.systempreferences:" & paneID & "'"
+        end if
+    on error
+        tell application "System Preferences"
+            activate
+            if anchorName is not "" then
+                reveal anchor anchorName of pane id paneID
+            else
+                set current pane to pane id paneID
+            end if
+        end tell
+    end try
+    delay 2 -- Даем время для открытия настроек
+end openSystemPreferences
+
+-- Функция для изменения настроек клавиатуры
+on changeCapsLockToEscape()
+    -- Открываем настройки клавиатуры
+    openSystemPreferences("com.apple.preference.keyboard", "")
+    
+    tell application "System Events"
+        tell process "System Settings"
+            -- Ждем загрузки окна настроек клавиатуры
+            set maxWait to 10
+            set counter to 0
+            
+            repeat until (exists window "Клавиатура") or counter ≥ maxWait
+                delay 0.5
+                set counter to counter + 1
+            end repeat
+            
+            if not (exists window "Клавиатура") then
+                error "Не удалось открыть настройки клавиатуры"
+            end if
+            
+            -- Прокручиваем до раздела с клавишами-модификаторами
+            try
+                click button "Клавиши-модификаторы" of scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window "Клавиатура"
+            on error
+                -- Альтернативный путь для некоторых версий macOS
+                click button "Modifier Keys" of scroll area 1 of group 1 of group 2 of splitter group 1 of group 1 of window "Keyboard"
+            end try
+            
+            delay 1
+            
+            -- Ждем появления диалогового окна
+            set maxWait to 10
+            set counter to 0
+            
+            repeat until (exists sheet 1 of window "Клавиатура") or counter ≥ maxWait
+                delay 0.5
+                set counter to counter + 1
+            end repeat
+            
+            if not (exists sheet 1 of window "Клавиатура") then
+                error "Не удалось найти диалог модификаторов"
+            end if
+            
+            -- Меняем значение для Caps Lock
+            tell sheet 1 of window "Клавиатура"
+                try
+                    -- Пытаемся найти выпадающий список Caps Lock
+                    set capsLockPopup to pop up button "Caps Lock"
+                    click capsLockPopup
+                    delay 0.5
+                    
+                    -- Выбираем Escape в выпадающем меню
+                    try
+                        click menu item "Escape" of menu 1 of capsLockPopup
+                    on error
+                        -- Альтернативное название на некоторых языках
+                        click menu item "⎋" of menu 1 of capsLockPopup
+                    end try
+                    
+                on error
+                    error "Не удалось найти выпадающий список Caps Lock"
+                end try
+                
+                delay 0.5
+                
+                -- Нажимаем кнопку "Готово"
+                try
+                    click button "Готово"
+                on error
+                    click button "Done"
+                end try
+            end tell
+        end tell
+    end tell
+    
+    -- Закрываем System Settings
+    delay 1
+    tell application "System Settings" to quit
+end changeCapsLockToEscape
+
+-- Запускаем процесс изменения
+changeCapsLockToEscape()

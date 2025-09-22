@@ -1,0 +1,18 @@
+#!/bin/bash
+
+function brewSetup {
+ if [ -d /opt/goinfre/$(whoami)/homebrew ];
+ then
+  eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+  chmod -R go-w "$(brew --prefix)/share/zsh"
+ else
+  cd /opt/goinfre/$(whoami)
+  git clone https://github.com/Homebrew/brew homebrew
+  eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+  brew update --force --quiet
+  chmod -R go-w "$(brew --prefix)/share/zsh"
+  brew install lcov
+ fi
+}
+
+brewSetup
