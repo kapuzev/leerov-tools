@@ -1,5 +1,6 @@
--- Code block 1
 tell application "System Settings"
     activate
-    reveal anchor "modifierKeys" of pane id "com.apple.preference.keyboard"
+    try
+        reveal pane id "com.apple.Keyboard-Settings.extension"
+    end try
 end tell
