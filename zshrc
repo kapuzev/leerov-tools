@@ -33,6 +33,7 @@ code() {
 
 # Автозагрузка при входе 
 cd "$SCRIPT_DIR"
+setopt NO_BG_NOTIFY
 chmod +x "$SCRIPT_DIR/pushRepo"
 (
     bash -c 'source "'"$SCRIPT_DIR"'/pushRepo"; git_push "${1:-Autocommit}"' "$SCRIPT_DIR" >/dev/null 2>&1
