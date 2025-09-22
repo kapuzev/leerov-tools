@@ -9,4 +9,4 @@ else
 fi
 nohup git add * > /dev/null 2>&1
 nohup git commit -m "$MESSAGE" > /dev/null 2>&1
-nohup git push  > /dev/null 2>&1
+nohup git push  > /dev/null 2>&1 &
