@@ -1,5 +1,5 @@
 #!/bin/bash
-nohup git pull --strategy=merge > /dev/null 2>&1 &
+nohup git pull --strategy=merge > /dev/null 2>&1
 DATE=$(date +"%Y-%m-%d")
 TIME=$(date +"%H:%M:%S")
 if [ $# -gt 0 ]; then
@@ -7,6 +7,6 @@ if [ $# -gt 0 ]; then
 else
   MESSAGE="$DATE $TIME"
 fi
-git add * > /dev/null 2>&1 &
-git commit -m "$MESSAGE" > /dev/null 2>&1 &
-git push  > /dev/null 2>&1 &
+git add * > /dev/null 2>&1
+git commit -m "$MESSAGE" > /dev/null 2>&1
+nohup git push  > /dev/null 2>&1
