@@ -1,3 +1,63 @@
 source brewSetup
 
 brewSetup
+
+# Basic Zsh configuration for macOS
+setopt autocd
+setopt interactivecomments
+setopt magicequalsubst
+setopt nonomatch
+setopt notify
+setopt numericglobsort
+setopt promptsubst
+
+WORDCHARS=${WORDCHARS//\/}
+PROMPT_EOL_MARK=""
+
+# Key bindings
+bindkey -e
+bindkey ' ' magic-space
+bindkey '^U' backward-kill-line
+bindkey '^[[3~' delete-char
+bindkey '^[[1;5C' forward-word
+bindkey '^[[1;5D' backward-word
+
+# Completion
+autoload -Uz compinit
+compinit -d ~/.cache/zcompdump
+zstyle ':completion:*' menu select
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=1000
+SAVEHIST=2000
+
+# Aliases
+alias ll='ls -l'
+alias la='ls -A'
+alias l='ls -CF'
+alias q='exit'
+
+# Homebrew paths (Intel Mac)
+if [ -d /usr/local/opt ]; then
+    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+fi
+
+# Homebrew paths (Apple Silicon Mac)
+if [ -d /opt/homebrew/opt ]; then
+    export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+    export PATH="/opt/homebrew/bin:$PATH"
+fi
+
+# Enable colors
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
+
+# Load plugins if available
+if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+    source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
