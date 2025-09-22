@@ -8,6 +8,7 @@ push() {
 }
 
 # Алиасы
+alias k="osascript $SCRIPT_DIR/caps-to-esc.scpt"
 alias la="ls -la"
 alias p="bash $SCRIPT_DIR/peer-review.sh"
 alias f="bash $SCRIPT_DIR/clang-format-and-cppcheck.sh"
