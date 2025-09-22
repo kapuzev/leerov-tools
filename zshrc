@@ -1,8 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR="$HOME/leerov-tools"
+source $SCRIPT_DIR/pushRepo
 
 # Алиасы
-alias push="bash push"
+alias push=git_push
 alias la="ls -la"
 alias p="bash peer-review.sh"
 alias f="bash clang-format-and-cppcheck.sh"
