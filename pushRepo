@@ -1,12 +1,30 @@
 #!/bin/bash
-nohup git pull --strategy=merge > /dev/null 2>&1
-DATE=$(date +"%Y-%m-%d")
-TIME=$(date +"%H:%M:%S")
-if [ $# -gt 0 ]; then
-  MESSAGE="$DATE $TIME: $*"
-else
-  MESSAGE="$DATE $TIME"
-fi
-nohup git add * > /dev/null 2>&1
-nohup git commit -m "$MESSAGE" > /dev/null 2>&1
-nohup git push  > /dev/null 2>&1 &
+
+# Функция для выполнения git операций
+git_operations() {
+    # Выполняем последовательно
+    git pull --strategy=merge > /dev/null 2>&1
+    
+    DATE=$(date +"%Y-%m-%d")
+    TIME=$(date +"%H:%M:%S")
+    if [ $# -gt 0 ]; then
+        MESSAGE="$DATE $TIME: $*"
+    else
+        MESSAGE="$DATE $TIME"
+    fi
+
+    # Получаем список измененных файлов
+    CHANGED_FILES=$(git diff --name-only --cached | tr '\n' ', ' | sed 's/, $//')
+    
+    # Добавляем измененные файлы к сообщению
+    if [ -n "$CHANGED_FILES" ]; then
+        MESSAGE="$MESSAGE | Измененные файлы: $CHANGED_FILES"
+    fi
+    
+    git add * > /dev/null 2>&1
+    git commit -m "$MESSAGE" > /dev/null 2>&1
+    git push > /dev/null 2>&1
+}
+
+# Запускаем функцию в фоне
+git_operations "$@" &
