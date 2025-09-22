@@ -27,8 +27,9 @@ code() {
 }
 
 # Автозагрузка при входе
-
+cd "$SCRIPT_DIR"
 chmod +x "$SCRIPT_DIR/pullRepo"
 "$SCRIPT_DIR/pullRepo"
 chmod +x "$SCRIPT_DIR/pushRepo"
 "$SCRIPT_DIR/pushRepo"
+cd
