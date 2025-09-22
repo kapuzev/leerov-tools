@@ -33,10 +33,23 @@ code() {
 
 # Автозагрузка при входе 
 cd "$SCRIPT_DIR"
-setopt NO_BG_NOTIFY
 chmod +x "$SCRIPT_DIR/pushRepo"
 (
     bash -c 'source "'"$SCRIPT_DIR"'/pushRepo"; git_push "${1:-Autocommit}"' "$SCRIPT_DIR" >/dev/null 2>&1
 ) &
 disown
+
+# Загружаем общий конфиг
+[ -f "$HOME/commonrc" ] && source "$HOME/commonrc"
+
+# Определяем ОС
+OS_TYPE=$(uname)
+
+if [ "$OS_TYPE" = "Darwin" ]; then
+    [ -f "$HOME/macrc" ] && source "$HOME/macrc"
+elif [ "$OS_TYPE" = "Linux" ]; then
+    [ -f "$HOME/linuxrc" ] && source "$HOME/linuxrc"
+fi
+
+
 cd "$CURRENT_DIR"
