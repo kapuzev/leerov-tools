@@ -34,5 +34,6 @@ code() {
 # Автозагрузка при входе 
 cd "$SCRIPT_DIR"
 chmod +x "$SCRIPT_DIR/pushRepo"
-bash -c 'source "$0/pushRepo"; git_push "${1:-Autocommit}";' "$SCRIPT_DIR" >/dev/null 2>&1 &
+nohup bash -c 'source "$0/pushRepo"; git_push "${1:-Autocommit}";' "$SCRIPT_DIR" >/dev/null 2>&1 &
+disown
 cd "$CURRENT_DIR"
