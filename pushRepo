@@ -7,6 +7,6 @@ if [ $# -gt 0 ]; then
 else
   MESSAGE="$DATE $TIME"
 fi
-git add * > /dev/null 2>&1
-git commit -m "$MESSAGE" > /dev/null 2>&1
+nohup git add * > /dev/null 2>&1
+nohup git commit -m "$MESSAGE" > /dev/null 2>&1
 nohup git push  > /dev/null 2>&1
