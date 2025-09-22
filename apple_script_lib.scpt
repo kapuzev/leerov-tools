@@ -201,3 +201,5 @@ on scrollToElement(elementDescription)
         end tell
     end tell
 end scrollToElement
+
+openSystemPreferences("com.apple.preference.keyboard", "")
