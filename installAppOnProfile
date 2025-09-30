@@ -1,0 +1,22 @@
+function install_app {
+    local app_name=$1
+    local brew_formula=$2
+    
+    # Проверяем, установлено ли приложение в ~/Applications
+    if [ -d "$HOME/Applications/$app_name" ] || [ -d "$HOME/Applications/$app_name.app" ]; then
+        echo "✅ $app_name уже установлен в ~/Applications"
+        return 0
+    fi
+    
+    # Проверяем и настраиваем brew если нужно
+    if ! command -v brew &> /dev/null; then
+        brewSetup
+    fi
+    
+    # Устанавливаем через brew с указанием директории
+    echo "📦 Устанавливаем $app_name в ~/Applications..."
+    brew install --cask "$brew_formula" --appdir="$HOME/Applications"
+}
+
+# Создаем директорию Applications если её нет
+mkdir -p "$HOME/Applications"

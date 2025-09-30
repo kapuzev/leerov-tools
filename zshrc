@@ -53,15 +53,11 @@ fi
 
 # Fastfetch and clear
 if ! command -v fastfetch &> /dev/null; then
-    # Проверяем и настраиваем brew
-    if ! command -v brew &> /dev/null; then
-        brewSetup
-    fi
-    
-    # Устанавливаем fastfetch
+    command -v brew &> /dev/null || brewSetup
     brew install fastfetch
 fi
 
 clear
 fastfetch
+
 cd "$CURRENT_DIR"
