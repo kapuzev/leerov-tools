@@ -51,5 +51,5 @@ elif [ "$OS_TYPE" = "Linux" ]; then
     [ -f "$SCRIPT_DIR/linuxrc" ] && source "$SCRIPT_DIR/linuxrc"
 fi
 # Fastfetch and clear
-brew && brew install fastfetch && clear && fastfetch
+brew; brew install fastfetch; clear; fastfetch
 cd "$CURRENT_DIR"
