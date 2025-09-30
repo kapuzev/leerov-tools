@@ -1,7 +1,12 @@
 #!/bin/bash
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
-source $SCRIPT_DIR/pushRepo
+cd "$SCRIPT_DIR"
+source env.sh
+source pushRepo
+
+# Определяем ОС
+OS_TYPE=$(uname)
 
 # Создать папку с правами 755 (чтение для всех)
 mkdir -p /opt/goinfre/$(whoami)
@@ -36,8 +41,6 @@ code() {
 }
 
 # Автозагрузка при входе 
-cd "$SCRIPT_DIR"
-
 chmod +x pushRepo
 (
     bash -c 'source pushRepo; git_push "${1:-Autocommit}"' >/dev/null 2>&1
@@ -46,9 +49,6 @@ disown
 
 # Загружаем общий конфиг
 [ -f commonrc ] && source commonrc
-
-# Определяем ОС
-OS_TYPE=$(uname)
 
 if [ "$OS_TYPE" = "Darwin" ]; then
     [ -f macrc ] && source macrc
