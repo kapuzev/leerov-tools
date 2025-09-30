@@ -1,9 +1,12 @@
 function install_app {
-    local app_name=$1
-    local brew_formula=$2
+    local brew_formula=$1    # Первый параметр - название формулы
     
-    # Проверяем, установлено ли приложение в ~/Applications
-    if [ -d "$HOME/Applications/$app_name" ] || [ -d "$HOME/Applications/$app_name.app" ]; then
+    # Определяем имя приложения для проверки
+    # (обычно совпадает с формулой, но может отличаться)
+    local app_name=${2:-$brew_formula}
+    
+    # Проверяем, установлено ли приложение
+    if [ -d "$HOME/Applications/$app_name.app" ]; then
         echo "✅ $app_name уже установлен в ~/Applications"
         return 0
     fi
@@ -13,7 +16,7 @@ function install_app {
         brewSetup
     fi
     
-    # Устанавливаем через brew с указанием директории
+    # Устанавливаем через brew
     echo "📦 Устанавливаем $app_name в ~/Applications..."
     brew install --cask "$brew_formula" --appdir="$HOME/Applications"
 }
