@@ -108,6 +108,7 @@ paths=(
 
     # My trash
     $SCRIPT_DIR/*.out
+    $HOME/Desktop
 )
 
 for path in "${paths[@]}"; do
