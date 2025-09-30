@@ -3,6 +3,10 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 source $SCRIPT_DIR/pushRepo
 
+# Создать папку с правами 755 (чтение для всех)
+mkdir -p /opt/goinfre/$(whoami)
+chmod -R 755 /opt/goinfre/$(whoami)
+
 push() {
     git_push "$@"
 }
