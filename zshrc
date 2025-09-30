@@ -61,8 +61,11 @@ if ! command -v fastfetch &> /dev/null; then
     command -v brew &> /dev/null || brewSetup
     brew install fastfetch
 fi
-
 clear
+
+# Space in goinfre
+echo "💾 Goinfre: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 "/" $2 " (" $5 ")"}' || echo "N/A")"
+echo ""
 fastfetch
 
 cd "$CURRENT_DIR"
