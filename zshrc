@@ -50,6 +50,18 @@ if [ "$OS_TYPE" = "Darwin" ]; then
 elif [ "$OS_TYPE" = "Linux" ]; then
     [ -f "$SCRIPT_DIR/linuxrc" ] && source "$SCRIPT_DIR/linuxrc"
 fi
+
 # Fastfetch and clear
-brew; brew install fastfetch; clear; fastfetch
+if ! command -v fastfetch &> /dev/null; then
+    # Проверяем и настраиваем brew
+    if ! command -v brew &> /dev/null; then
+        brewSetup
+    fi
+    
+    # Устанавливаем fastfetch
+    brew install fastfetch
+fi
+
+clear
+fastfetch
 cd "$CURRENT_DIR"

@@ -13,3 +13,4 @@ function brewSetup {
   chmod -R go-w "$(brew --prefix)/share/zsh"
  fi
 }
+
