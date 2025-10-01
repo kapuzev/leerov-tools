@@ -4,12 +4,26 @@
 function brewInstall {
     if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
         echo "Homebrew уже установлен в /opt/goinfre/$(whoami)/homebrew"
+        eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
         return 0
     fi
     
     echo "Установка Homebrew..."
     cd /opt/goinfre/$(whoami)
+    
+    # Убедимся, что папка полностью удалена перед установкой
+    if [ -d "/opt/goinfre/$(whoami)/homebrew" ]; then
+        rm -rf "/opt/goinfre/$(whoami)/homebrew"
+    fi
+    
     git clone https://github.com/Homebrew/brew homebrew
+    
+    # Проверяем успешность клонирования
+    if [ ! -d "/opt/goinfre/$(whoami)/homebrew" ]; then
+        echo "Ошибка: не удалось клонировать Homebrew"
+        return 1
+    fi
+    
     eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
     brew update --force --quiet
     chmod -R go-w "$(brew --prefix)/share/zsh"
@@ -22,6 +36,11 @@ function brewUninstall {
         echo "Удаление Homebrew..."
         rm -rf /opt/goinfre/$(whoami)/homebrew
         echo "Homebrew удален"
+        
+        # Удаляем переменные окружения
+        if command -v brew >/dev/null 2>&1; then
+            unset -f brew
+        fi
     else
         echo "Homebrew не установлен в /opt/goinfre/$(whoami)/homebrew"
     fi
@@ -29,13 +48,19 @@ function brewUninstall {
 
 # Основная функция установки (только устанавливает, если нет)
 function brewSetup {
-    brewInstall
-    brewActivate
+    if [ ! -d /opt/goinfre/$(whoami)/homebrew ]; then
+        brewInstall
+    else
+        eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+        echo "Homebrew уже установлен и активирован"
+    fi
 }
 
 # Функция переустановки (сначала удаляет, потом устанавливает)
 function brewReinstall {
     brewUninstall
+    # Даем время на полное удаление
+    sleep 1
     brewInstall
 }
 
