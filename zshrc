@@ -56,13 +56,7 @@ elif [ "$OS_TYPE" = "Linux" ]; then
     [ -f linuxrc ] && source linuxrc
 fi
 
-# Fastfetch and clear
-if ! command -v fastfetch &> /dev/null; then
-    command -v brew &> /dev/null || brewSetup
-    brew install fastfetch
-fi
-clear
-fastfetch
+
 
 # Space in goinfre
 echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) | cut -f1)"

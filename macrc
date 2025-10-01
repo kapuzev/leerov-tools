@@ -63,3 +63,11 @@ if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
 fi
 
 alias k="osascript $SCRIPT_DIR/caps-to-esc.scpt > /dev/null 2>&1"
+
+# Fastfetch and clear
+if ! command -v fastfetch &> /dev/null; then
+    command -v brew &> /dev/null || brewSetup
+    brew install fastfetch
+fi
+clear
+fastfetch

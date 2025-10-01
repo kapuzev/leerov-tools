@@ -1,17 +1,47 @@
 #!/bin/bash
 
+# Функция удаления Homebrew
+function brewUninstall {
+    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
+        echo "Удаление Homebrew..."
+        rm -rf /opt/goinfre/$(whoami)/homebrew
+        echo "Homebrew удален"
+    else
+        echo "Homebrew не установлен в /opt/goinfre/$(whoami)/homebrew"
+    fi
+}
+
+# Функция установки Homebrew
+function brewInstall {
+    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
+        echo "Homebrew уже установлен в /opt/goinfre/$(whoami)/homebrew"
+        return 0
+    fi
+    
+    echo "Установка Homebrew..."
+    cd /opt/goinfre/$(whoami)
+    git clone https://github.com/Homebrew/brew homebrew
+    eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+    brew update --force --quiet
+    chmod -R go-w "$(brew --prefix)/share/zsh"
+    echo "Homebrew успешно установлен"
+}
+
+# Основная функция установки (удаляет старую версию перед установкой)
 function brewSetup {
- if [ -d /opt/goinfre/$(whoami)/homebrew ];
- then
-  eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
-  chmod -R go-w "$(brew --prefix)/share/zsh"
- else
-  cd /opt/goinfre/$(whoami)
-  git clone https://github.com/Homebrew/brew homebrew
-  eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
-  brew update --force --quiet
-  chmod -R go-w "$(brew --prefix)/share/zsh"
- fi
+    brewUninstall
+    brewInstall
+}
+
+# Функция для активации существующей установки Homebrew
+function brewActivate {
+    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
+        eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+        echo "Homebrew активирован"
+    else
+        echo "Homebrew не найден. Используйте brewSetup для установки"
+        return 1
+    fi
 }
 
 source "installAppOnProfile"
