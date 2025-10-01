@@ -43,18 +43,32 @@ function brewUninstall {
 
 # Основная функция (полный аналог вашей brsw)
 function brewSetup {
-    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
-        eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+    local brew_path="/opt/goinfre/$(whoami)/homebrew"
+    
+    if [ -d "$brew_path" ]; then
+        eval "$($brew_path/bin/brew shellenv)"
         chmod -R go-w "$(brew --prefix)/share/zsh"
-        echo "Homebrew активирован"
+        echo "✓ Homebrew активирован"
+        return 0
+    fi
+    
+    echo "Быстрая установка Homebrew..."
+    cd /opt/goinfre/$(whoami)
+    
+    # Оптимальный вариант: неглубокое клонирование
+    git clone --depth=1 https://github.com/Homebrew/brew homebrew
+    
+    eval "$($brew_path/bin/brew shellenv)"
+    brew update --force --quiet
+    chmod -R go-w "$(brew --prefix)/share/zsh"
+    
+    # Тестируем функциональность
+    if brew --version > /dev/null 2>&1; then
+        echo "✓ Homebrew успешно установлен и готов к работе"
+        echo "✓ Доступны: brew install, brew search, brew update и другие команды"
     else
-        cd /opt/goinfre/$(whoami)
-        git clone https://github.com/Homebrew/brew homebrew
-        eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
-        brew update --force --quiet
-        chmod -R go-w "$(brew --prefix)/share/zsh"
-        brew install lcov
-        echo "Homebrew успешно установлен"
+        echo "❌ Что-то пошло не так"
+        return 1
     fi
 }
 
