@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# Функция удаления Homebrew
-function brewUninstall {
-    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
-        echo "Удаление Homebrew..."
-        rm -rf /opt/goinfre/$(whoami)/homebrew
-        echo "Homebrew удален"
-    else
-        echo "Homebrew не установлен в /opt/goinfre/$(whoami)/homebrew"
-    fi
-}
-
 # Функция установки Homebrew
 function brewInstall {
     if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
@@ -27,8 +16,25 @@ function brewInstall {
     echo "Homebrew успешно установлен"
 }
 
-# Основная функция установки (удаляет старую версию перед установкой)
+# Функция удаления Homebrew
+function brewUninstall {
+    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
+        echo "Удаление Homebrew..."
+        rm -rf /opt/goinfre/$(whoami)/homebrew
+        echo "Homebrew удален"
+    else
+        echo "Homebrew не установлен в /opt/goinfre/$(whoami)/homebrew"
+    fi
+}
+
+# Основная функция установки (только устанавливает, если нет)
 function brewSetup {
+    brewInstall
+    brewActivate
+}
+
+# Функция переустановки (сначала удаляет, потом устанавливает)
+function brewReinstall {
     brewUninstall
     brewInstall
 }
