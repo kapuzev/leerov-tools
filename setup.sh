@@ -1,5 +1,5 @@
 #!/bin/bash
-
+SCRIPT_DIR="$HOME/leerov-tools"
 curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 if [ ! -f "$HOME/.zshrc" ]; then
