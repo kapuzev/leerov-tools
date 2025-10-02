@@ -32,11 +32,11 @@ qr() {
         return 1
     fi
     
-    local encoded_text=$(echo "$*" | sed 's/ /%20/g')
-    local url="qrenco.de/$encoded_text"
+    local text="$*"
+    local url="qrenco.de/${text// /%20}"
     
     echo "$url"
-    curl -s "$url"
+    printf "%s" "$text" | curl -F-=\<- qrenco.de
 }
 
 code() {
