@@ -78,4 +78,9 @@ function brewReinstall {
     brewInstall
 }
 
+brew_path="/opt/goinfre/$(whoami)/homebrew/bin"
+if [[ ":$PATH:" != *":$brew_path:"* ]] && [ -d "$brew_path" ]; then
+    export PATH="$brew_path:$PATH"
+fi
+
 source "installAppOnProfile"
