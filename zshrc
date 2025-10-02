@@ -26,6 +26,19 @@ alias s="bash $SCRIPT_DIR/save.sh"
 
 alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
 
+qr() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: qr <text>"
+        return 1
+    fi
+    
+    local encoded_text=$(echo "$*" | sed 's/ /%20/g')
+    local url="qrenco.de/$encoded_text"
+    
+    echo "$url"
+    curl -s "$url"
+}
+
 code() {
   target="$1"
   if [ -z "$target" ]; then
