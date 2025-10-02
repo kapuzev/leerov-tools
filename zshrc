@@ -28,15 +28,27 @@ alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│  
 
 qr() {
     if [ $# -eq 0 ]; then
-        echo "Usage: qr <text>"
-        return 1
+        # Если нет аргументов, читаем из stdin
+        if [ -t 0 ]; then
+            echo "Usage: qr <text>"
+            return 1
+        else
+            local text=$(cat)
+            local encoded_text=$(echo "$text" | sed 's/ /%20/g')
+            local url="qrenco.de/$encoded_text"
+            
+            echo "$url"
+            echo "$text" | curl -s -F-=\<- qrenco.de
+        fi
+    else
+        # Если есть аргументы, используем их
+        local text="$*"
+        local encoded_text=$(echo "$text" | sed 's/ /%20/g')
+        local url="qrenco.de/$encoded_text"
+        
+        echo "$url"
+        echo "$text" | curl -s -F-=\<- qrenco.de
     fi
-    
-    local text="$*"
-    local url="qrenco.de/${text// /%20}"
-    
-    echo "$url"
-    printf "%s" "$text" | curl -F-=\<- qrenco.de
 }
 
 code() {
