@@ -52,7 +52,7 @@ qr() {
 }
 
 # Модификация PATH
-export PATH="/usr/local/bin/code:$PATH"
+export PATH="$HOME/.local/bin:/usr/local/bin/code:$PATH"
 
 # Автозагрузка при входе 
 chmod +x pushRepo
