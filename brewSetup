@@ -83,4 +83,4 @@ if [[ ":$PATH:" != *":$brew_path:"* ]] && [ -d "$brew_path" ]; then
     export PATH="$brew_path:$PATH"
 fi
 
-source "installAppOnProfile"
+source "installAppOnProfile.sh"

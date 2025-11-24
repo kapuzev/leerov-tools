@@ -3,7 +3,7 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR"
 source env.sh
-source pushRepo
+source pushRepo.sh
 
 # Определяем ОС
 OS_TYPE=$(uname)
@@ -55,9 +55,9 @@ qr() {
 export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
 
 # Автозагрузка при входе 
-chmod +x pushRepo
+chmod +x pushRepo.sh
 (
-    bash -c 'source pushRepo; git_push "${1:-Autocommit}"' >/dev/null 2>&1
+    bash -c 'source pushRepo.sh; git_push "${1:-Autocommit}"' >/dev/null 2>&1
 ) &
 disown
 
