@@ -52,7 +52,7 @@ qr() {
 }
 
 # Модификация PATH
-export PATH="$HOME/.local/bin:/usr/local/bin/code:$PATH"
+export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
 
 # Автозагрузка при входе 
 chmod +x pushRepo
