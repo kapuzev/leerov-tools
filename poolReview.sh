@@ -1,4 +1,5 @@
 #!/bin/bash
+
 p2p () {
     git clone $1 review -b develop
     code review
@@ -7,7 +8,6 @@ p2p () {
 
 check() {
     if [ $# -eq 0 ]; then
-        # Используем путь по умолчанию - review в текущей папке
         local PROJECT_PATH="review"
         echo "Используется путь по умолчанию: $PROJECT_PATH"
     else
@@ -16,13 +16,11 @@ check() {
     
     local ORIGINAL_DIR="$PWD"
     
-    # Проверяем существование папки проекта
     if [ ! -d "$PROJECT_PATH" ]; then
         echo "Ошибка: Папка $PROJECT_PATH не существует"
         return 1
     fi
     
-    # Переходим в папку проекта
     if [ ! -d "$PROJECT_PATH/src" ]; then
         echo "Ошибка: Папка $PROJECT_PATH не содержит директорию src"
         return 1
@@ -45,61 +43,31 @@ check() {
     
     clang-format $CLANG_FORMAT_CONFIG -n *.c *.h 2>/dev/null
     
-    # 2. Статический анализ cppcheck
+    # 2. Статический анализ cppcheck - ИСПРАВЛЕНО
     echo -e "\n2. СТАТИЧЕСКИЙ АНАЛИЗ (cppcheck):"
-    cppcheck --enable=all --suppress=missingIncludeSystem --std=c11 *.c
+    cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --std=c11 .
     
-    # 3. Компиляция всех .c файлов
-    echo -e "\n3. КОМПИЛЯЦИЯ:"
-    local compiled_files=()
-    for file in *.c; do
-        if [ -f "$file" ]; then
-            output_name="${file%.c}.out"
-            echo "Компиляция $file..."
-            if gcc -Wall -Werror -Wextra -std=c11 -o "$output_name" "$file"; then
-                compiled_files+=("$output_name")
-                echo "✓ Успешно: $output_name"
-            else
-                echo "✗ Ошибка компиляции: $file"
-            fi
+    # 3. Компиляция всех .c файлов в один исполняемый файл
+    echo -e "\n3. КОМПИЛЯЦИЯ ВСЕХ ФАЙЛОВ:"
+    if ls *.c >/dev/null 2>&1; then
+        echo "Компиляция всех .c файлов в program.out..."
+        if gcc -Wall -Werror -Wextra -std=c11 -o program.out *.c; then
+            echo "✓ Успешно: program.out"
+            
+            # 4. Запуск с проверкой утечек
+            echo -e "\n4. ЗАПУСК И ПРОВЕРКА УТЕЧЕК:"
+            echo "Запуск program.out с проверкой утечек..."
+            leaks -atExit -- ./program.out
+        else
+            echo "✗ Ошибка компиляции"
         fi
-    done
-    
-    # 4. Меню для запуска с проверкой утечек
-    if [ ${#compiled_files[@]} -gt 0 ]; then
-        echo -e "\n4. ЗАПУСК И ПРОВЕРКА УТЕЧЕК:"
-        while true; do
-            echo "0. Выход"
-            for i in "${!compiled_files[@]}"; do
-                echo "$((i+1)). Запустить ${compiled_files[$i]} с проверкой утечек"
-            done
-            
-            read -p "Выбор: " choice
-            echo
-            
-            case $choice in
-                0)
-                    break
-                    ;;
-                *)
-                    if [[ $choice -gt 0 && $choice -le ${#compiled_files[@]} ]]; then
-                        index=$((choice-1))
-                        file_to_run="${compiled_files[$index]}"
-                        echo "Запуск $file_to_run с проверкой утечек..."
-                        leaks -atExit -- ./"$file_to_run"
-                    else
-                        echo "Неверный выбор. Попробуйте снова."
-                    fi
-                    ;;
-            esac
-        done
     else
-        echo -e "\nНет скомпилированных файлов для запуска"
+        echo "Нет .c файлов для компиляции"
     fi
     
-    # Очистка скомпилированных файлов
+    # Очистка
     echo -e "\nОчистка..."
-    rm -f *.out
+    rm -f program.out
     
     # Возврат в исходную директорию
     cd "$ORIGINAL_DIR" || return 1
