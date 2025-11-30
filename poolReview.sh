@@ -51,7 +51,7 @@ check() {
     echo -e "\n3. КОМПИЛЯЦИЯ ВСЕХ ФАЙЛОВ:"
     if ls *.c >/dev/null 2>&1; then
         echo "Компиляция всех .c файлов в program.out..."
-        if gcc -Wall -Werror -Wextra -std=c11 -o program.out *.c; then
+        if clang -Wall -Werror -Wextra -std=c11 -o program.out *.c; then
             echo "✓ Успешно: program.out"
             
             # 4. Запуск с проверкой утечек
