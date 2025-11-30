@@ -4,6 +4,7 @@ SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR"
 source env.sh
 source pushRepo.sh
+source poolReview.sh
 
 # Определяем ОС
 OS_TYPE=$(uname)
