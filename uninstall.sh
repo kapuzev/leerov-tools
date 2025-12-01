@@ -1,15 +1,15 @@
 #!/bin/bash
-if grep -q "source ~/21tools/zshrc" ~/.zshrc; then
-    sed -i '/source ~\/21tools\/zshrc/d' ~/.zshrc
+if grep -q "source ~/leerov-tools/zshrc" ~/.zshrc; then
+    sed -i '/source ~\/leerov-tools\/zshrc/d' ~/.zshrc
 fi
-if grep -q "source ~/21tools/vimrc" ~/.vimrc; then
-    sed -i '/source ~\/21tools\/vimrc/d' ~/.vimrc
+if grep -q "source ~/leerov-tools/vimrc" ~/.vimrc; then
+    sed -i '/source ~\/leerov-tools\/vimrc/d' ~/.vimrc
 fi
-if [ -d ~/21tools ]; then
-    rm -rf ~/21tools
-    echo "Папка ~/21tools удалена."
+if [ -d ~/leerov-tools ]; then
+    rm -rf ~/leerov-tools
+    echo "Папка ~/leerov-tools удалена."
 else
-    echo "Папка ~/21tools не существует."
+    echo "Папка ~/leerov-tools не существует."
 fi
 if [ -f ~/.vim/autoload/plug.vim ]; then
     rm -f ~/.vim/autoload/plug.vim
