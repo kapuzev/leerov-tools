@@ -62,7 +62,7 @@ if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 fi
 
-alias k="osascript $SCRIPT_DIR/caps-to-esc.scpt > /dev/null 2>&1"
+# alias k="osascript $SCRIPT_DIR/caps-to-esc.scpt > /dev/null 2>&1"
 
 # Fastfetch and clear
 if ! command -v fastfetch &> /dev/null; then
