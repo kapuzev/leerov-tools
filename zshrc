@@ -27,13 +27,13 @@ alias s="bash $SCRIPT_DIR/save.sh"
 
 alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
 
+# Функции
 settings(){
 (
-    bash -c 'cd leerov-tools; python3 settings.py' >/dev/null 2>&1
+    bash -c 'cd leerov-tools/settings; python3 settings.py' >/dev/null 2>&1
 ) &
 disown
 }
-
 
 qr() {
     if [ $# -eq 0 ]; then
@@ -79,7 +79,6 @@ if [ "$OS_TYPE" = "Darwin" ]; then
 elif [ "$OS_TYPE" = "Linux" ]; then
     [ -f linuxrc ] && source linuxrc
 fi
-
 
 
 # Space in goinfre
