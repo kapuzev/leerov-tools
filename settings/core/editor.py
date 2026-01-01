@@ -363,8 +363,8 @@ class SettingsEditor:
         row = 0
         
         for setting_name, setting_data in tab_settings.items():
-            def create_change_handler(sn, tn=tab_name):
-                return lambda value: self.on_setting_change(tn, sn, value)
+            def create_change_handler(setting_name, tab_name):
+                return lambda value=None: self.on_setting_change(tab_name, setting_name, value)
             
             widget = SettingWidget(
                 self.scrollable_settings.scrollable_frame,
