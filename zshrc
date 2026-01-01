@@ -27,6 +27,14 @@ alias s="bash $SCRIPT_DIR/save.sh"
 
 alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
 
+settings(){
+(
+    python3 -c 'python3 leerov-tools/settings.py' >/dev/null 2>&1
+) &
+disown
+}
+
+
 qr() {
     if [ $# -eq 0 ]; then
         # Если нет аргументов, читаем из stdin
