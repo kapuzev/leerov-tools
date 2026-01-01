@@ -119,7 +119,6 @@ done
 
 # Additional cache cleanup
 find ~/Library/Application\ Support -type d -iname "*cache*" 2>/dev/null -exec rm -rf {} \;
-rm -rf ~/Library/Developer/Xcode/*
 
 # Space after cleanup
 echo "$purple"'|----|After  cleanup|----|'

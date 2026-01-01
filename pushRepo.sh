@@ -88,7 +88,7 @@ git_push() {
     
     # Выполняем pull
     echo "Выполняем pull..."
-    if ! git pull --strategy=merge; then
+    if ! git pull --strategy=recursive; then  # ИЗМЕНЕНО: merge → recursive
         echo "Ошибка при выполнении pull. Разрешите конфликты и попробуйте снова."
         return 1
     fi
@@ -157,7 +157,7 @@ git_push_ssh_only_silent() {
     fi
     
     # Тихий pull
-    git pull --strategy=merge --quiet 2>/dev/null
+    git pull --strategy=recursive --quiet 2>/dev/null  # ИЗМЕНЕНО: merge → recursive
     
     # Проверяем есть ли изменения
     if [ -z "$(git status --porcelain)" ]; then
