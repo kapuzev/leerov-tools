@@ -31,9 +31,7 @@ def setup_styles():
     
     # Фреймы настроек
     style.configure('Setting.TLabelframe',
-                   padding=10,
-                   relief=tk.RAISED,
-                   borderwidth=1)
+                   padding=10)
     
     style.configure('Setting.TLabelframe.Label',
                    font=('Segoe UI', 10, 'bold'),
@@ -51,9 +49,7 @@ def setup_styles():
     
     # Кнопки действий
     style.configure('Primary.TButton',
-                   background=config.COLORS['primary'],
-                   foreground='white',
-                   borderwidth=0)
+                   foreground='white')
     
     style.map('Primary.TButton',
              background=[('active', '#2c5282')])
