@@ -29,7 +29,7 @@ alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│  
 
 settings(){
 (
-    bash -c 'python3 leerov-tools/settings.py' >/dev/null 2>&1
+    bash -c 'cd leerov-tools; python3 settings.py' >/dev/null 2>&1
 ) &
 disown
 }
