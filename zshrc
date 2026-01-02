@@ -64,7 +64,7 @@ qr() {
 # Модификация PATH
 export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
 export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
-
+export PATH="/opt/goinfre/harveyfa/flutter/bin:$PATH"
 # Автозагрузка при входе 
 chmod +x pushRepo.sh
 (
