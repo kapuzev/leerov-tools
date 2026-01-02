@@ -145,3 +145,34 @@ echo "$purple"'Cleaned '"$cleaned_count"' items'
 echo ""
 show_disk_space "After cleanup"
 echo "$purple"'|----|Cleanup ended|----|'"$reset"
+
+# Simple version: show top 10 largest files
+echo "${purple}|----| Top 10 Largest Files in $HOME |----|${reset}"
+echo ""
+
+# Find and display top 10 largest files
+find "$HOME" -type f -exec du -h {} + 2>/dev/null | \
+    sort -rh | \
+    head -10 | \
+    awk -v r="$red" -v y="$yellow" -v g="$green" -v p="$purple" -v c="$cyan" -v rs="$reset" '
+    {
+        size = $1
+        $1 = ""
+        file = substr($0, 2)
+        
+        # Color by size
+        if (index(size, "G")) color = r
+        else if (index(size, "M") && size+0 > 100) color = y
+        else if (index(size, "M")) color = g
+        else color = c
+        
+        # Truncate long paths
+        if (length(file) > 70) {
+            file = "..." substr(file, length(file)-66)
+        }
+        
+        printf "%s%8s%s  %s%s%s\n", p, size, rs, color, file, rs
+    }'
+
+echo ""
+echo "${cyan}Tip: Use 'du -sh * | sort -rh | head -10' in any directory${reset}"
