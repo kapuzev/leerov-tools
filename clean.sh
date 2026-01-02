@@ -9,23 +9,33 @@ green=$'\033[0;32m'
 red=$'\033[0;31m'
 purple=$'\033[0;35m'
 
-# Initial total space, used and available
+# Function to show disk space
+show_disk_space() {
+    local phase="$1"
+    echo "$purple"'|----|'"$phase"'|----|'
+    echo "$purple"'|'"$blue"'Size  '"$purple"'|  '"$red"'Used  '"$purple"'|  '"$green"'Avail '"$purple"'|'"$reset"
+    
+    # Get disk usage for the current user's home directory
+    disk_info=$(df -h "$HOME" | tail -1)
+    if [ -n "$disk_info" ]; then
+        total=$(echo "$disk_info" | awk '{print $2}')
+        used=$(echo "$disk_info" | awk '{print $3}')
+        avail=$(echo "$disk_info" | awk '{print $4}')
+        echo "$purple|$blue$total $purple=  $red$used $purple+  $green$avail $purple|$reset"
+    else
+        # Fallback to root directory
+        disk_info=$(df -h / | tail -1)
+        total=$(echo "$disk_info" | awk '{print $2}')
+        used=$(echo "$disk_info" | awk '{print $3}')
+        avail=$(echo "$disk_info" | awk '{print $4}')
+        echo "$purple|$blue$total $purple=  $red$used $purple+  $green$avail $purple|$reset"
+    fi
+}
 
-echo "$purple"'|----|Before cleanup|----|'
-echo "$purple"'|'"$blue"'Size  '"$purple"'|  '"$red"'Used  '"$purple"'|  '"$green"'Avail '"$purple"'|'"$reset"
-df -h | grep Users | awk -v purple="$purple" -v green="$green" -v blue="$blue" -v red="$red" '{print purple "|" blue $2 " " purple "=  " red $3 " " purple "+  " green $4 " " purple "|"}'
-# Cleanup...
-rm -rf ~/Library/Application\ Support/Slack/Code\ Cache/ 2>/dev/zero
-rm -rf ~/Library/Application\ Support/Slack/Cache/ 2>/dev/zero
-rm -rf ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage/ 2>/dev/zero
+# Show initial disk space
+show_disk_space "Before cleanup"
 
-### These lines delete all your Visual Code data
-
-#rm -rf ~/Library/ApplicationSupport/CrashReporter/* 2>/dev/zero
-#rm -rf ~/Library/Application\ Support/Code/* 2>/dev/zero
-#rm -rf ~/Library/Group\ Containers/* 2>/dev/zero
-
-# Cleanup with array of paths
+# Cleanup paths array
 paths=(
     # Slack cache paths
     ~/Library/Application\ Support/Slack/Code\ Cache/
@@ -62,7 +72,7 @@ paths=(
     ~/Library/42_cache
 
     # Browser caches
-    ~/Library/Application\ Support/Firefox/Profiles/hdsrd79k.default-release/storage
+    ~/Library/Application\ Support/Firefox/Profiles/*/storage
     ~/Library/Application\ Support/Google/Chrome/Default/Service\ Worker/CacheStorage/*
     ~/Library/Application\ Support/Google/Chrome/Crashpad/completed/*
     ~/Library/Safari/*
@@ -70,9 +80,8 @@ paths=(
 
     # Development tools cache
     ~/.kube/cache/*
-    ~/Library/Developer/Xcode/*
+    ~/Library/Developer/Xcode/DerivedData/*
     ~/Library/Application\ Support/Code/User/workspaceStorage
-    ~/Library/Application\ Support/Code/Cache/Library/Application\ Support/Code/Cachei
     ~/Library/Application\ Support/Code/CacheData
     ~/Library/Application\ Support/Code/Cache
     ~/Library/Application\ Support/Code/Crashpad/completed
@@ -83,18 +92,12 @@ paths=(
     ~/Library/Application\ Support/Code/Code\ Cache
     ~/Library/Application\ Support/Code/CachedData/*
     ~/Library/Application\ Support/Code/Crashpad/completed/*
-    ~/Library/Application\ Support/Code/User/workspaceStoratge/*
+    ~/Library/Application\ Support/Code/User/workspaceStorage/*
     ~/Library/Caches/com.microsoft.VSCode.ShipIt
     ~/Library/Caches/com.microsoft.VSCode
 
     # Multimedia applications cache
     ~/Library/Application\ Support/Spotify/PersistentCache
-
-    # Telegram cache
-    ~/Library/Application\ Support/Telegram\ Desktop/tdata/user_data
-    ~/Library/Application\ Support/Telegram\ Desktop/tdata/emoji
-    ~/Library/Group\ Containers/6N38VWS5BX.ru.keepcoder.Telegram/account-570841890615083515/postbox/*
-    ~/Library/Containers/org.telegram.desktop/Data/Library/Application\ Support/Telegram\ Desktop/tdata/emoji/*
 
     # Google update tools cache
     ~/Library/Caches/com.google.SoftwareUpdate
@@ -108,21 +111,37 @@ paths=(
 
     # My trash
     $SCRIPT_DIR/*.out
-    $HOME/Desktop
+    $HOME/Desktop/*.log
+    $HOME/Desktop/*.tmp
 )
 
+# Count cleaned items
+cleaned_count=0
+
+# Cleanup loop
 for path in "${paths[@]}"; do
-    if [ -e "$path" ] || [ -L "$path" ]; then
-        rm -rf "$path" 2>/dev/null
+    # Expand ~ to home directory
+    expanded_path="${path/#\~/$HOME}"
+    
+    if [ -e "$expanded_path" ] || [ -L "$expanded_path" ]; then
+        if rm -rf "$expanded_path" 2>/dev/null; then
+            cleaned_count=$((cleaned_count + 1))
+        fi
     fi
 done
+
+# Clean old downloads (30+ days old)
+find ~/Downloads -name "*.dmg" -mtime +30 -delete 2>/dev/null
+find ~/Downloads -name "*.zip" -mtime +30 -delete 2>/dev/null
+find ~/Downloads -name "*.pkg" -mtime +30 -delete 2>/dev/null
 
 # Additional cache cleanup
 find ~/Library/Application\ Support -type d -iname "*cache*" 2>/dev/null -exec rm -rf {} \;
 
-# Space after cleanup
-echo "$purple"'|----|After  cleanup|----|'
-echo "$purple"'|'"$blue"'Size  '"$purple"'|  '"$red"'Used  '"$purple"'|  '"$green"'Avail '"$purple"'|'"$reset"
-df -h | grep Users | awk -v purple="$purple" -v green="$green" -v blue="$blue" -v red="$red" '{print purple "|" blue $2 " " purple "=  " red $3 " " purple "+  " green $4 " " purple "|"}'
-echo -n "$reset"
-echo "$purple"'|----|Cleanup  ended|----|'
+echo ""
+echo "$purple"'Cleaned '"$cleaned_count"' items'
+
+# Show disk space after cleanup
+echo ""
+show_disk_space "After cleanup"
+echo "$purple"'|----|Cleanup ended|----|'"$reset"
