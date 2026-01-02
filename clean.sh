@@ -32,6 +32,117 @@ show_disk_space() {
     fi
 }
 
+# Function to display top 10 largest files with full paths
+show_largest_files_full() {
+    local dir="${1:-$HOME}"
+    
+    echo "${purple}|----| Top 10 Largest Files |----|${reset}"
+    echo "${cyan}Searching in: $dir${reset}"
+    echo ""
+    
+    # Count total files for context
+    file_count=$(find "$dir" -type f 2>/dev/null | wc -l)
+    echo "${yellow}📁 Total files scanned: $file_count${reset}"
+    echo ""
+    
+    # Find and display top 10 largest files with full paths
+    find "$dir" -type f -exec du -h {} + 2>/dev/null | \
+        sort -rh | \
+        head -10 | \
+        awk -v r="$red" -v y="$yellow" -v g="$green" -v p="$purple" -v c="$cyan" -v rs="$reset" '
+    BEGIN {
+        print sprintf("%-8s  %s", "Size", "Full Path");
+        print "--------  ------------------------------------------------------------";
+    }
+    {
+        size = $1;
+        $1 = "";
+        file = substr($0, 2);
+        
+        # Color by size
+        if (index(size, "G")) color = r;
+        else if (index(size, "M") && size+0 > 100) color = y;
+        else if (index(size, "M")) color = g;
+        else color = c;
+        
+        printf "%s%8s%s  %s%s%s\n", p, size, rs, color, file, rs;
+    }'
+    
+    echo ""
+    echo "${purple}|----| File Type Analysis |----|${reset}"
+    
+    # Analyze by file extension
+    echo ""
+    echo "${bold}📊 Largest files by type:${normal}"
+    echo ""
+    
+    # Video files
+    echo "${blue}🎬 Video files (>100MB):${reset}"
+    find "$dir" -type f \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.wmv" -o -iname "*.flv" \) \
+        -size +100M -exec du -h {} + 2>/dev/null | \
+        sort -rh | \
+        head -3 | \
+        while IFS= read -r line; do
+            size=$(echo "$line" | awk '{print $1}')
+            path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+            printf "  %-7s %s\n" "$size" "$path"
+        done
+    [ $? -ne 0 ] && echo "  None found"
+    
+    echo ""
+    
+    # Archives and disk images
+    echo "${blue}🗃️  Archives & Disk Images (>100MB):${reset}"
+    find "$dir" -type f \( -iname "*.dmg" -o -iname "*.iso" -o -iname "*.zip" -o -iname "*.rar" -o -iname "*.7z" -o -iname "*.tar.gz" -o -iname "*.pkg" \) \
+        -size +100M -exec du -h {} + 2>/dev/null | \
+        sort -rh | \
+        head -3 | \
+        while IFS= read -r line; do
+            size=$(echo "$line" | awk '{print $1}')
+            path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+            printf "  %-7s %s\n" "$size" "$path"
+        done
+    [ $? -ne 0 ] && echo "  None found"
+    
+    echo ""
+    
+    # Development files
+    echo "${blue}💻 Development files (>50MB):${reset}"
+    find "$dir" -type f \( -iname "*.node_modules" -o -path "*/.git/*" -o -iname "*.docker" -o -iname "*.vdi" -o -iname "*.vmdk" -o -iname "*.qcow2" \) \
+        -size +50M -exec du -h {} + 2>/dev/null | \
+        sort -rh | \
+        head -3 | \
+        while IFS= read -r line; do
+            size=$(echo "$line" | awk '{print $1}')
+            path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+            printf "  %-7s %s\n" "$size" "$path"
+        done
+    [ $? -ne 0 ] && echo "  None found"
+    
+    echo ""
+    echo "${purple}|----| Largest Directories |----|${reset}"
+    echo ""
+    
+    # Show top 5 largest directories
+    echo "${bold}📁 Top 5 Largest Directories:${normal}"
+    echo ""
+    du -sh "$dir"/* 2>/dev/null | sort -rh | head -5 | \
+        while IFS= read -r line; do
+            size=$(echo "$line" | awk '{print $1}')
+            dir_path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+            
+            if [[ "$size" == *G* ]]; then
+                color="$red"
+            elif [[ "$size" == *M* ]]; then
+                color="$yellow"
+            else
+                color="$green"
+            fi
+            
+            printf "%s%8s%s  %s%s%s\n" "$purple" "$size" "$reset" "$color" "$dir_path" "$reset"
+        done
+}
+
 # Show initial disk space
 show_disk_space "Before cleanup"
 
@@ -146,33 +257,4 @@ echo ""
 show_disk_space "After cleanup"
 echo "$purple"'|----|Cleanup ended|----|'"$reset"
 
-# Simple version: show top 10 largest files
-echo "${purple}|----| Top 10 Largest Files in $HOME |----|${reset}"
-echo ""
-
-# Find and display top 10 largest files
-find "$HOME" -type f -exec du -h {} + 2>/dev/null | \
-    sort -rh | \
-    head -10 | \
-    awk -v r="$red" -v y="$yellow" -v g="$green" -v p="$purple" -v c="$cyan" -v rs="$reset" '
-    {
-        size = $1
-        $1 = ""
-        file = substr($0, 2)
-        
-        # Color by size
-        if (index(size, "G")) color = r
-        else if (index(size, "M") && size+0 > 100) color = y
-        else if (index(size, "M")) color = g
-        else color = c
-        
-        # Truncate long paths
-        if (length(file) > 70) {
-            file = "..." substr(file, length(file)-66)
-        }
-        
-        printf "%s%8s%s  %s%s%s\n", p, size, rs, color, file, rs
-    }'
-
-echo ""
-echo "${cyan}Tip: Use 'du -sh * | sort -rh | head -10' in any directory${reset}"
+show_largest_files_full()
