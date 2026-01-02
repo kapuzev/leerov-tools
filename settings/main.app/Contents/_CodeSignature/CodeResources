@@ -3,7 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>files</key>
-	<dict/>
+	<dict>
+		<key>Resources/icon.icns</key>
+		<data>
+		hWazqekSAvVXzS9BrGxfybj7j7M=
+		</data>
+	</dict>
 	<key>files2</key>
 	<dict>
 		<key>MacOS/Python</key>
@@ -347,6 +352,17 @@
 			</data>
 			<key>requirement</key>
 			<string>cdhash H"2477510a678a0f7ae6c7d3bf835c034883c1f607" or cdhash H"c966f77c95c148ef622f3b646b5802d6de74afde"</string>
+		</dict>
+		<key>Resources/icon.icns</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			hWazqekSAvVXzS9BrGxfybj7j7M=
+			</data>
+			<key>hash2</key>
+			<data>
+			2TrhIS5Dtl9khLu6b3i69cGttJoIbgYSIGAspK60vaI=
+			</data>
 		</dict>
 	</dict>
 	<key>rules</key>
