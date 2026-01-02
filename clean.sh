@@ -257,4 +257,4 @@ echo ""
 show_disk_space "After cleanup"
 echo "$purple"'|----|Cleanup ended|----|'"$reset"
 
-show_largest_files_full()
+show_largest_files_full

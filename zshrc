@@ -22,7 +22,7 @@ alias la="ls -la"
 alias p="bash $SCRIPT_DIR/peer-review.sh"
 alias f="bash $SCRIPT_DIR/clang-format-and-cppcheck.sh"
 alias c="bash $SCRIPT_DIR/clean.sh"
-alias r="bash $SCRIPT_DIR/crun.sh"
+alias r="source ~/.zshrc"
 alias s="bash $SCRIPT_DIR/save.sh"
 
 alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
