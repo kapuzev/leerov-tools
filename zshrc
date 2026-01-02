@@ -86,6 +86,7 @@ echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami)
 echo "💾 Диск: Использовано/Свободно/Всего (Заполнено): $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' || echo "N/A")"
 echo ""
 
+source ru2en.sh
 
 cd "$CURRENT_DIR"
 
@@ -109,13 +110,3 @@ function transliterate-command-line() {
     BUFFER="$result"
     CURSOR=${#BUFFER}
 }
-
-# Привязываем к нажатию Enter
-function accept-line-with-translit() {
-    transliterate-command-line
-    zle .accept-line
-}
-
-zle -N accept-line-with-translit
-bindkey '^M' accept-line-with-translit
-bindkey '^J' accept-line-with-translit
