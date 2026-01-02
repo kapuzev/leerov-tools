@@ -1,6 +1,7 @@
 #!/bin/bash
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
+plugins=(... globalias)
 cd "$SCRIPT_DIR"
 source env.sh
 source pushRepo.sh
