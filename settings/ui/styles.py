@@ -81,21 +81,6 @@ def setup_styles():
         ]
     )
     
-    # Акцентные кнопки (основные действия)
-    style.configure('Accent.TButton',
-        background=colors['primary'],
-        foreground=colors['text_primary'],
-        borderwidth=0,
-        font=config.FONTS['normal'],
-        padding=(12, 6)
-    )
-    style.map('Accent.TButton',
-        background=[
-            ('active', colors['primary_hover']),
-            ('pressed', colors['primary_active'])
-        ]
-    )
-    
     # Кнопки вкладок
     style.configure('Tab.TButton',
         background=colors['tab_bg'],
@@ -154,10 +139,6 @@ def setup_styles():
         foreground=[
             ('focus', colors['input_text']),
             ('disabled', colors['text_muted'])
-        ],
-        background=[
-            ('active', colors['bg_tertiary']),
-            ('pressed', colors['bg_tertiary'])
         ]
     )
     

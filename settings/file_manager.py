@@ -3,16 +3,14 @@
 import json
 import os
 from datetime import datetime
-import shutil
-from tkinter import filedialog, messagebox
-import config
+from tkinter import filedialog
 
 class FileManager:
     """Менеджер работы с файлами настроек"""
     
     def __init__(self):
-        self.settings_file = config.DEFAULT_SETTINGS_FILE
-        self.template_file = config.TEMPLATE_FILE
+        self.settings_file = "settings.json"
+        self.template_file = "settings_template.json"
         self.settings = {}
         
     def load_settings(self):
@@ -72,7 +70,7 @@ class FileManager:
                 parent=parent_window,
                 defaultextension=".json",
                 filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-                initialfile=f"{config.EXPORT_PREFIX}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                initialfile=f"settings_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             )
             
             if filename:
@@ -83,23 +81,6 @@ class FileManager:
             
         except Exception as e:
             return False, f"Ошибка экспорта: {str(e)}"
-            
-    def import_settings(self, parent_window=None):
-        """Импорт настроек из файла"""
-        try:
-            filename = filedialog.askopenfilename(
-                parent=parent_window,
-                filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
-            )
-            
-            if filename:
-                with open(filename, 'r', encoding='utf-8') as f:
-                    imported = json.load(f)
-                return True, "Настройки импортированы", imported
-            return False, "Импорт отменен", None
-            
-        except Exception as e:
-            return False, f"Ошибка импорта: {str(e)}", None
             
     def get_file_status(self):
         """Получение статуса файлов"""
@@ -113,14 +94,3 @@ class FileManager:
                 'path': os.path.abspath(self.template_file)
             }
         }
-        
-    def backup_settings(self):
-        """Создание резервной копии настроек"""
-        try:
-            if os.path.exists(self.settings_file):
-                backup_file = f"settings_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                shutil.copy2(self.settings_file, backup_file)
-                return True, f"Резервная копия создана: {backup_file}"
-            return False, "Файл настроек не найден для резервного копирования"
-        except Exception as e:
-            return False, f"Ошибка создания резервной копии: {str(e)}"

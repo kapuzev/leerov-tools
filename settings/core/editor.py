@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
+import json
 
-import config
 from file_manager import FileManager
 from ui.styles import setup_styles
-from ui.widgets import ScrollableFrame, SettingWidget, TabButton, JsonEditorDialog
-from ui.dialogs import Dialogs
+from ui.widgets import ScrollableFrame, SettingWidget, JsonEditorDialog
+import config
 
 class SettingsEditor:
     """Основной класс редактора настроек"""
@@ -19,12 +18,16 @@ class SettingsEditor:
         self.root.geometry(f"{config.WINDOW_WIDTH}x{config.WINDOW_HEIGHT}")
         self.root.minsize(config.MIN_WIDTH, config.MIN_HEIGHT)
         
+        # Настройка темной темы для корневого окна
+        self.root.configure(bg=config.COLORS['bg_primary'])
+        
         # Настройка стилей
         self.style = setup_styles()
         
         # Менеджер файлов
         self.file_manager = FileManager()
         self.settings = {}
+        self.active_tab = None
         
         # Создание интерфейса
         self.create_widgets()
@@ -39,22 +42,20 @@ class SettingsEditor:
         """Создание всех виджетов интерфейса"""
         # Главный контейнер
         main_container = ttk.Frame(self.root, padding="10")
-        main_container.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Настройка веса строк и колонок
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_container.columnconfigure(1, weight=1)
-        main_container.rowconfigure(1, weight=1)
+        main_container.pack(fill=tk.BOTH, expand=True)
         
         # Заголовок
         self.create_header(main_container)
         
-        # Панель вкладок слева
-        self.create_tabs_panel(main_container)
+        # Основное содержимое
+        content_frame = ttk.Frame(main_container)
+        content_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
         
-        # Основная область настроек справа
-        self.create_settings_panel(main_container)
+        # Левая панель с вкладками
+        self.create_tabs_panel(content_frame)
+        
+        # Правая панель с настройками
+        self.create_settings_panel(content_frame)
         
         # Панель действий
         self.create_actions_panel(main_container)
@@ -64,67 +65,62 @@ class SettingsEditor:
         
     def create_header(self, parent):
         """Создание заголовка"""
-        title_frame = ttk.Frame(parent)
-        title_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
+        header_frame = ttk.Frame(parent)
+        header_frame.pack(fill=tk.X)
         
-        ttk.Label(title_frame, text="⚙️ Редактор настроек JSON", 
-                 style='Title.TLabel').pack(side=tk.LEFT)
+        ttk.Label(header_frame, text="⚙️ Редактор настроек JSON", 
+                 style='TLabel', font=config.FONTS['title']).pack(side=tk.LEFT)
         
-        ttk.Label(title_frame, 
-                 text="Редактируйте настройки локально. Все изменения сохраняются в файлы рядом с программой.",
-                 style='Subtitle.TLabel').pack(side=tk.LEFT, padx=10)
+        ttk.Label(header_frame, 
+                 text="Редактируйте настройки локально",
+                 style='TLabel', font=config.FONTS['subtitle']).pack(side=tk.LEFT, padx=10)
                  
     def create_tabs_panel(self, parent):
         """Создание панели с вкладками"""
-        self.tab_frame = ttk.Frame(parent, width=200)
-        self.tab_frame.grid(row=1, column=0, sticky=(tk.W, tk.N, tk.S), padx=(0, 10))
-        self.tab_frame.grid_propagate(False)
+        left_frame = ttk.Frame(parent, width=200)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        left_frame.pack_propagate(False)
         
-        ttk.Label(self.tab_frame, text="Разделы настроек:", 
+        ttk.Label(left_frame, text="Разделы настроек:", 
                  font=('Segoe UI', 11, 'bold')).pack(anchor=tk.W, pady=(0, 10))
         
         # Контейнер для кнопок вкладок
-        self.tabs_container = ttk.Frame(self.tab_frame)
+        self.tabs_container = ttk.Frame(left_frame)
         self.tabs_container.pack(fill=tk.BOTH, expand=True)
         
         # Информация о файлах
-        self.create_file_info_panel()
+        self.create_file_info_panel(left_frame)
         
-    def create_file_info_panel(self):
+    def create_file_info_panel(self, parent):
         """Создание панели информации о файлах"""
-        self.file_info_frame = ttk.LabelFrame(self.tab_frame, text="Файлы", padding=10)
-        self.file_info_frame.pack(fill=tk.X, pady=(10, 0))
+        file_frame = ttk.LabelFrame(parent, text="Файлы", padding=10)
+        file_frame.pack(fill=tk.X, pady=(10, 0))
         
-        self.file_info_label = ttk.Label(self.file_info_frame, text="Проверка файлов...")
+        self.file_info_label = ttk.Label(file_frame, text="Проверка файлов...")
         self.file_info_label.pack(anchor=tk.W)
         
     def create_settings_panel(self, parent):
         """Создание основной панели настроек"""
-        self.settings_frame = ttk.Frame(parent)
-        self.settings_frame.grid(row=1, column=1, sticky=(tk.W, tk.E, tk.N, tk.S))
+        right_frame = ttk.Frame(parent)
+        right_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Заголовок раздела
-        self.section_header = ttk.Frame(self.settings_frame)
-        self.section_header.pack(fill=tk.X, pady=(0, 20))
+        self.section_header = ttk.Frame(right_frame)
+        self.section_header.pack(fill=tk.X, pady=(0, 15))
         
         self.section_title = ttk.Label(self.section_header, 
-                                      text="Выберите раздел настроек", 
-                                      style='Section.TLabel')
+                                      text="Выберите раздел настроек",
+                                      font=config.FONTS['section'])
         self.section_title.pack(anchor=tk.W)
         
-        self.section_desc = ttk.Label(self.section_header, 
-                                     text="Настройки сгруппированы по разделам",
-                                     style='Subtitle.TLabel')
-        self.section_desc.pack(anchor=tk.W)
-        
-        # Контейнер для настроек с прокруткой
-        self.scrollable_settings = ScrollableFrame(self.settings_frame)
+        # Область настроек с прокруткой
+        self.scrollable_settings = ScrollableFrame(right_frame)
         self.scrollable_settings.pack(fill=tk.BOTH, expand=True)
         
     def create_actions_panel(self, parent):
         """Создание панели действий"""
         action_frame = ttk.Frame(parent)
-        action_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
+        action_frame.pack(fill=tk.X, pady=(10, 0))
         
         # Кнопки действий
         actions = [
@@ -134,8 +130,6 @@ class SettingsEditor:
             ("↩️ Сбросить к шаблону", self.reset_to_template),
             ("📋 Показать JSON", self.show_json),
             ("📤 Экспорт", self.export_settings),
-            ("➕ Новый раздел", self.add_section),
-            ("🔧 Новая настройка", self.add_setting)
         ]
         
         for text, command in actions:
@@ -147,7 +141,7 @@ class SettingsEditor:
         self.status_var = tk.StringVar(value="Готов")
         status_bar = ttk.Label(parent, textvariable=self.status_var, 
                               relief=tk.SUNKEN, anchor=tk.W)
-        status_bar.grid(row=3, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 0))
+        status_bar.pack(fill=tk.X, pady=(10, 0))
         
     def center_window(self):
         """Центрирование окна на экране"""
@@ -200,9 +194,9 @@ class SettingsEditor:
         if success:
             self.status_var.set(message)
             self.update_file_info()
-            Dialogs.show_info("Сохранено", message)
+            messagebox.showinfo("Сохранено", message)
         else:
-            Dialogs.show_error("Ошибка", message)
+            messagebox.showerror("Ошибка", message)
             
     def create_template(self):
         """Создание файла шаблона"""
@@ -211,14 +205,14 @@ class SettingsEditor:
         if success:
             self.status_var.set(message)
             self.update_file_info()
-            Dialogs.show_info("Шаблон создан", message)
+            messagebox.showinfo("Шаблон создан", message)
         else:
-            Dialogs.show_error("Ошибка", message)
+            messagebox.showerror("Ошибка", message)
             
     def reset_to_template(self):
         """Сброс настроек к шаблону"""
-        if not Dialogs.ask_yesno("Подтверждение", 
-                               "Сбросить все настройки к значениям шаблона?\nТекущие изменения будут потеряны."):
+        if not messagebox.askyesno("Подтверждение", 
+                                 "Сбросить все настройки к значениям шаблона?\nТекущие изменения будут потеряны."):
             return
             
         success, message = self.file_manager.load_settings()
@@ -232,8 +226,8 @@ class SettingsEditor:
                 first_tab = list(self.settings.keys())[0]
                 self.select_tab(first_tab)
         else:
-            Dialogs.show_warning("Шаблон не найден", 
-                               "Файл шаблона не найден. Создайте его сначала.")
+            messagebox.showwarning("Шаблон не найден", 
+                                 "Файл шаблона не найден. Создайте его сначала.")
                                
     def export_settings(self):
         """Экспорт настроек в выбранный файл"""
@@ -241,14 +235,13 @@ class SettingsEditor:
         
         if success:
             self.status_var.set(message)
-            Dialogs.show_info("Экспорт", message)
+            messagebox.showinfo("Экспорт", message)
         elif message != "Экспорт отменен":
-            Dialogs.show_error("Ошибка", message)
+            messagebox.showerror("Ошибка", message)
             
     def show_json(self):
         """Показать/редактировать JSON в отдельном окне"""
         try:
-            import json
             json_text = json.dumps(self.settings, ensure_ascii=False, indent=2)
             
             editor = JsonEditorDialog(self.root, json_text)
@@ -265,52 +258,13 @@ class SettingsEditor:
                         self.select_tab(first_tab)
                         
                     self.status_var.set("Настройки обновлены из JSON")
-                    Dialogs.show_info("Успешно", "Настройки обновлены из JSON")
+                    messagebox.showinfo("Успешно", "Настройки обновлены из JSON")
                 except Exception as e:
-                    Dialogs.show_error("Ошибка JSON", f"Некорректный JSON:\n{str(e)}")
+                    messagebox.showerror("Ошибка JSON", f"Некорректный JSON:\n{str(e)}")
                     
         except Exception as e:
-            Dialogs.show_error("Ошибка", f"Не удалось создать редактор JSON:\n{str(e)}")
+            messagebox.showerror("Ошибка", f"Не удалось создать редактор JSON:\n{str(e)}")
             
-    def add_section(self):
-        """Добавить новый раздел"""
-        result = Dialogs.create_section_dialog(self.root)
-        
-        if result:
-            section_name = result["name"]
-            if section_name not in self.settings:
-                self.settings[section_name] = {}
-                self.update_tabs()
-                self.select_tab(section_name)
-                self.status_var.set(f"Добавлен раздел: {section_name}")
-            else:
-                Dialogs.show_warning("Ошибка", "Раздел с таким именем уже существует")
-                
-    def add_setting(self):
-        """Добавить новую настройку"""
-        if not self.settings:
-            Dialogs.show_warning("Ошибка", "Сначала создайте или выберите раздел")
-            return
-            
-        if not hasattr(self, 'active_tab') or not self.active_tab:
-            Dialogs.show_warning("Ошибка", "Сначала выберите раздел для добавления настройки")
-            return
-            
-        result = Dialogs.create_setting_dialog(self.root)
-        
-        if result:
-            setting_name = result["name"]
-            if setting_name not in self.settings[self.active_tab]:
-                self.settings[self.active_tab][setting_name] = {
-                    "value": result["value"],
-                    "type": result["type"],
-                    "description": result["description"]
-                }
-                self.display_settings(self.active_tab)
-                self.status_var.set(f"Добавлена настройка: {setting_name}")
-            else:
-                Dialogs.show_warning("Ошибка", "Настройка с таким именем уже существует")
-                
     def update_tabs(self):
         """Обновление списка вкладок"""
         # Очищаем контейнер
@@ -320,26 +274,19 @@ class SettingsEditor:
         # Создаем кнопки для каждой вкладки
         self.tab_buttons = {}
         for tab_name in self.settings.keys():
-            btn = TabButton(self.tabs_container, text=tab_name, 
-                          style='Tab.TButton', 
-                          command=lambda t=tab_name: self.select_tab(t))
+            btn = ttk.Button(self.tabs_container, text=tab_name,
+                           style='Tab.TButton', 
+                           command=lambda t=tab_name: self.select_tab(t))
             btn.pack(fill=tk.X, pady=2)
             self.tab_buttons[tab_name] = btn
             
     def select_tab(self, tab_name):
         """Выбор вкладки для отображения"""
-        # Сбрасываем выделение всех кнопок
-        for btn in self.tab_buttons.values():
-            btn.deactivate()
-            
-        # Устанавливаем новую активную вкладку
+        # Сбрасываем активную вкладку
         self.active_tab = tab_name
-        if tab_name in self.tab_buttons:
-            self.tab_buttons[tab_name].activate()
-            
+        
         # Обновляем заголовок
         self.section_title.config(text=tab_name)
-        self.section_desc.config(text=f"Редактирование настроек раздела")
         
         # Отображаем настройки выбранной вкладки
         self.display_settings(tab_name)
@@ -359,22 +306,20 @@ class SettingsEditor:
         tab_settings = self.settings[tab_name]
         
         # Создаем виджеты для каждой настройки
-        self.setting_widgets = {}
-        row = 0
-        
         for setting_name, setting_data in tab_settings.items():
-            def create_change_handler(setting_name, tab_name):
-                return lambda value=None: self.on_setting_change(tab_name, setting_name, value)
+            # Создаем обработчик с замыканием для сохранения значений
+            def make_handler(tab=tab_name, name=setting_name):
+                def handler(value):
+                    self.on_setting_change(tab, name, value)
+                return handler
             
             widget = SettingWidget(
                 self.scrollable_settings.scrollable_frame,
                 setting_name,
                 setting_data,
-                on_change_callback=create_change_handler(setting_name)
+                on_change_callback=make_handler()
             )
-            widget.grid(row=row, column=0, sticky=(tk.W, tk.E), padx=5, pady=5)
-            self.setting_widgets[(tab_name, setting_name)] = widget
-            row += 1
+            widget.pack(fill=tk.X, padx=5, pady=5)
             
     def on_setting_change(self, tab_name, setting_name, value):
         """Обработчик изменения настройки"""

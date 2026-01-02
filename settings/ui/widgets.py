@@ -12,7 +12,7 @@ class ScrollableFrame(ttk.Frame):
         super().__init__(parent, **kwargs)
         
         # Создаем Canvas и Scrollbar
-        self.canvas = tk.Canvas(self, highlightthickness=0)
+        self.canvas = tk.Canvas(self, highlightthickness=0, bg=config.COLORS['bg_primary'])
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", 
                                       command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
@@ -53,36 +53,41 @@ class SettingWidget(ttk.Frame):
         
         self.setting_name = setting_name
         self.setting_data = setting_data
-        self.on_change = on_change_callback
+        
+        # Обернем колбэк для правильной передачи аргументов
+        if on_change_callback:
+            # Создаем замыкание для сохранения текущих значений
+            self.on_change = lambda value=None: on_change_callback(value)
+        else:
+            self.on_change = None
         
         self.create_widgets()
         
     def create_widgets(self):
         """Создание виджетов настройки"""
-        # Заголовок
-        title_frame = ttk.Frame(self)
-        title_frame.pack(fill=tk.X, pady=(0, 5))
+        # Основной фрейм с рамкой
+        self.configure(relief='solid', borderwidth=1)
         
-        ttk.Label(title_frame, text=self.setting_name,
-                 font=config.FONTS['normal'], 
-                 style='SettingTitle.TLabel').pack(side=tk.LEFT)
+        # Заголовок и тип
+        header_frame = ttk.Frame(self)
+        header_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
         
-        # Тип настройки
+        ttk.Label(header_frame, text=self.setting_name,
+                 font=config.FONTS['normal']).pack(side=tk.LEFT)
+        
         setting_type = self.setting_data.get('type', 'string')
-        type_label = ttk.Label(title_frame, text=f"({setting_type})",
-                              font=('Segoe UI', 8),
-                              foreground='gray')
-        type_label.pack(side=tk.LEFT, padx=(5, 0))
+        ttk.Label(header_frame, text=f"({setting_type})",
+                 font=('Segoe UI', 8),
+                 foreground=config.COLORS['text_muted']).pack(side=tk.LEFT, padx=(5, 0))
         
         # Описание
-        description = self.setting_data.get('description', 'Без описания')
+        description = self.setting_data.get('description', '')
         if description:
-            desc_label = ttk.Label(self, text=description,
-                                  font=('Segoe UI', 9),
-                                  foreground='#666',
-                                  wraplength=400,
-                                  justify=tk.LEFT)
-            desc_label.pack(fill=tk.X, pady=(0, 10))
+            ttk.Label(self, text=description,
+                     font=('Segoe UI', 9),
+                     foreground=config.COLORS['text_muted'],
+                     wraplength=400,
+                     justify=tk.LEFT).pack(fill=tk.X, padx=10, pady=(0, 10))
         
         # Контрол в зависимости от типа
         self.create_control()
@@ -93,14 +98,14 @@ class SettingWidget(ttk.Frame):
         setting_type = self.setting_data.get('type', 'string')
         
         control_frame = ttk.Frame(self)
-        control_frame.pack(fill=tk.X)
+        control_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
         
         if setting_type == 'boolean':
             self.var = tk.BooleanVar(value=value)
             self.control = ttk.Checkbutton(
                 control_frame, text="Включено", 
                 variable=self.var,
-                command=self.on_value_changed
+                command=lambda: self._handle_change()
             )
             self.control.pack(anchor=tk.W)
             
@@ -114,10 +119,10 @@ class SettingWidget(ttk.Frame):
                 from_=min_val, to=max_val,
                 textvariable=self.var,
                 width=15,
-                command=self.on_value_changed
+                command=self._handle_change
             )
             self.control.pack(anchor=tk.W)
-            self.control.bind('<FocusOut>', lambda e: self.on_value_changed())
+            self.control.bind('<FocusOut>', lambda e: self._handle_change())
             
         elif setting_type == 'string' and 'options' in self.setting_data:
             self.var = tk.StringVar(value=value)
@@ -129,8 +134,7 @@ class SettingWidget(ttk.Frame):
                 width=20
             )
             self.control.pack(anchor=tk.W)
-            self.control.bind('<<ComboboxSelected>>', 
-                            lambda e: self.on_value_changed())
+            self.control.bind('<<ComboboxSelected>>', lambda e: self._handle_change())
             
         else:  # string или другой тип
             self.var = tk.StringVar(value=str(value))
@@ -140,14 +144,12 @@ class SettingWidget(ttk.Frame):
                 width=30
             )
             self.control.pack(fill=tk.X)
-            self.control.bind('<FocusOut>', 
-                            lambda e: self.on_value_changed())
+            self.control.bind('<KeyRelease>', lambda e: self._handle_change())
             
-    def on_value_changed(self):
+    def _handle_change(self):
         """Обработчик изменения значения"""
         if self.on_change:
-            value = self.get_value()
-            self.on_change(self.setting_name, value)
+            self.on_change(self.get_value())
             
     def get_value(self):
         """Получение значения с правильным типом"""
@@ -162,34 +164,6 @@ class SettingWidget(ttk.Frame):
                 return 0
         else:
             return str(self.var.get())
-            
-    def set_value(self, value):
-        """Установка значения"""
-        setting_type = self.setting_data.get('type', 'string')
-        
-        if setting_type == 'boolean':
-            self.var.set(bool(value))
-        elif setting_type == 'number':
-            self.var.set(str(value))
-        else:
-            self.var.set(str(value))
-
-class TabButton(ttk.Button):
-    """Кнопка вкладки с состоянием"""
-    
-    def __init__(self, parent, text, command=None, **kwargs):
-        super().__init__(parent, text=text, command=command, **kwargs)
-        self.is_active = False
-        
-    def activate(self):
-        """Активация кнопки"""
-        self.is_active = True
-        self.state(['pressed'])
-        
-    def deactivate(self):
-        """Деактивация кнопки"""
-        self.is_active = False
-        self.state(['!pressed'])
 
 class JsonEditorDialog:
     """Диалоговое окно редактора JSON"""
@@ -206,6 +180,7 @@ class JsonEditorDialog:
         self.dialog = tk.Toplevel(self.parent)
         self.dialog.title(self.title)
         self.dialog.geometry("800x600")
+        self.dialog.configure(bg=config.COLORS['bg_primary'])
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
         
@@ -220,7 +195,10 @@ class JsonEditorDialog:
         self.text_widget = scrolledtext.ScrolledText(
             text_frame, 
             wrap=tk.NONE,
-            font=config.FONTS['monospace']
+            font=config.FONTS['monospace'],
+            bg=config.COLORS['input_bg'],
+            fg=config.COLORS['input_text'],
+            insertbackground=config.COLORS['text_primary']
         )
         self.text_widget.pack(fill=tk.BOTH, expand=True)
         self.text_widget.insert(1.0, self.json_text)
@@ -233,19 +211,11 @@ class JsonEditorDialog:
                   command=self.on_apply).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Отмена", 
                   command=self.dialog.destroy).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="Копировать", 
-                  command=self.on_copy).pack(side=tk.LEFT, padx=5)
                   
     def on_apply(self):
         """Применить изменения"""
         self.result = self.text_widget.get(1.0, tk.END)
         self.dialog.destroy()
-        
-    def on_copy(self):
-        """Копировать JSON в буфер обмена"""
-        text = self.text_widget.get(1.0, tk.END)
-        self.dialog.clipboard_clear()
-        self.dialog.clipboard_append(text)
         
     def show(self):
         """Показать диалог и вернуть результат"""

@@ -53,12 +53,12 @@ def get_default_template():
         },
         "Внешний вид": {
             "Темная тема": {
-                "value": False,
+                "value": True,
                 "type": "boolean",
                 "description": "Включение темной темы оформления"
             },
             "Основной цвет": {
-                "value": "#3b82f6",
+                "value": "#60a5fa",
                 "type": "string",
                 "description": "Основной цвет приложения в HEX формате"
             },
@@ -68,24 +68,6 @@ def get_default_template():
                 "description": "Базовый размер шрифта в пикселях",
                 "min": 8,
                 "max": 32
-            },
-            "Тема оформления": {
-                "value": "light",
-                "type": "string",
-                "description": "Тема интерфейса",
-                "options": ["light", "dark", "auto"]
-            }
-        }
-    }
-
-def get_empty_template():
-    """Возвращает пустой шаблон"""
-    return {
-        "Новый раздел": {
-            "Новая настройка": {
-                "value": "",
-                "type": "string",
-                "description": "Описание настройки"
             }
         }
     }
