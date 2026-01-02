@@ -89,3 +89,16 @@ echo ""
 
 cd "$CURRENT_DIR"
 
+function transliterate_command() {
+    # Словарь преобразования русских букв в английские
+    local translit=$(echo "$READLINE_LINE" | sed \
+        -e 'y/йцукенгшщзхъфывапролджэячсмитьбю.ё/qwertyuiop[]asdfghjkl;\''zxcvbnm,..`/' \
+        -e 'y/ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё/QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?~/')
+    
+    READLINE_LINE="$translit"
+    READLINE_POINT=${#READLINE_LINE}
+}
+
+# Привязываем функцию к нажатию Enter
+bind -x '"\C-m": transliterate_command'
+bind -x '"\C-j": transliterate_command'
