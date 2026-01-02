@@ -89,14 +89,3 @@ echo ""
 
 cd "$CURRENT_DIR"
 
-function preexec_translit() {
-    local translit_cmd=$(echo "$1" | sed \
-        -e 'y/йцукенгшщзхъфывапролджэячсмитьбю.ё/qwertyuiop[]asdfghjkl;\''zxcvbnm,..`/' \
-        -e 'y/ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё/QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?~/')
-    
-    eval "$translit_cmd"
-    return 1  # Отменяем выполнение оригинальной команды
-}
-
-# Включаем перехват для всех команд
-trap 'preexec_translit "$BASH_COMMAND"' DEBUG
