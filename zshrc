@@ -29,12 +29,7 @@ alias s="bash $SCRIPT_DIR/save.sh"
 alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
 
 # Функции
-settings(){
-(
-    bash -c 'cd leerov-tools/settings; open "LT Settings.app"' >/dev/null 2>&1
-) &
-disown
-}
+alias settings="cd leerov-tools/settings; open \"LT Settings.app\""
 
 qr() {
     if [ $# -eq 0 ]; then
