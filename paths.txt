@@ -1,6 +1,6 @@
 # ~/.paths - файл только с путями
-/Applications/Visual Studio Code.app/Contents/Resources/app/bin
 /Applications/Postgres.app/Contents/Versions/latest/bin
+/Applications/Visual Studio Code.app/Contents/Resources/app/bin
 
 
 # Дополнительные пути (примеры)
