@@ -1,0 +1,9 @@
+# ~/.paths - файл только с путями
+/Applications/Visual Studio Code.app/Contents/Resources/app/bin
+/Applications/Postgres.app/Contents/Versions/latest/bin
+
+
+# Дополнительные пути (примеры)
+# /usr/local/bin
+# /opt/homebrew/bin
+# $HOME/.local/bin

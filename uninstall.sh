@@ -2,8 +2,8 @@
 if grep -q "source ~/leerov-tools/zshrc" ~/.zshrc; then
     sed -i '/source ~\/leerov-tools\/zshrc/d' ~/.zshrc
 fi
-if grep -q "source ~/leerov-tools/vimrc" ~/.vimrc; then
-    sed -i '/source ~\/leerov-tools\/vimrc/d' ~/.vimrc
+if grep -q "source ~/leerov-tools/vimrc.vim" ~/.vimrc.vim; then
+    sed -i '/source ~\/leerov-tools\/vimrc.vim/d' ~/.vimrc.vim
 fi
 if [ -d ~/leerov-tools ]; then
     rm -rf ~/leerov-tools

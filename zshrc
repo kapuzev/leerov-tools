@@ -61,10 +61,13 @@ qr() {
     fi
 }
 
-# Модификация PATH
-export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
-export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
-export PATH="/opt/goinfre/harveyfa/flutter/bin:$PATH"
+# Добавление всех путей из файла .paths
+if [ -f $SCRIPT_DIR/paths.txt ]; then
+    for dir in $(cat $SCRIPT_DIR/paths.txt | grep -v '^#' | grep -v '^$'); do
+        export PATH="$dir:$PATH"
+    done
+fi
+
 # Автозагрузка при входе 
 chmod +x pushRepo.sh
 (

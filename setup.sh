@@ -9,9 +9,9 @@ if ! grep -q "source $SCRIPT_DIR/zshrc" "$HOME/.zshrc"; then
     echo "source $SCRIPT_DIR/zshrc" >> "$HOME/.zshrc"
 fi
 
-if [ ! -f "$HOME/.vimrc" ]; then
-    touch "$HOME/.vimrc"
+if [ ! -f "$HOME/.vimrc.vim" ]; then
+    touch "$HOME/.vimrc.vim"
 fi
-if ! grep -q "source $SCRIPT_DIR/vimrc" "$HOME/.vimrc"; then
-    echo "source $SCRIPT_DIR/vimrc" >> "$HOME/.vimrc"
+if ! grep -q "source $SCRIPT_DIR/vimrc.vim" "$HOME/.vimrc.vim"; then
+    echo "source $SCRIPT_DIR/vimrc.vim" >> "$HOME/.vimrc.vim"
 fi
