@@ -119,7 +119,3 @@ EOF
     [[ $((counter-1)) -eq 0 ]] && echo "Файлы не найдены"
     echo "=== Всего: $((counter-1)) файлов ==="
 }
-
-export -f show
-
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && show "$@"
