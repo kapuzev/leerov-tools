@@ -6,4 +6,4 @@ export NVM_DIR="/Users/$(whoami)/goinfre/.nvm"
 
 export HOMEBREW_CASK_OPTS="--appdir=/Users/$(whoami)/goinfre/Applications"
 
-export ANDROID_NDK_HOME="/opt/goinfre/harveyfa/homebrew/share/android-ndk"
+export ANDROID_NDK_HOME="/opt/goinfre/$(whoami)/homebrew/share/android-ndk"
