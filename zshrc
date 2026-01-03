@@ -60,11 +60,8 @@ qr() {
 }
 
 # Добавление всех путей из файла .paths
-if [ -f "$SCRIPT_DIR/paths.txt" ]; then
-    # Читаем все строки в массив, игнорируя комментарии и пустые строки
-    mapfile -t directories < <(grep -v '^[[:space:]]*#' "$SCRIPT_DIR/paths.txt" | grep -v '^[[:space:]]*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-    
-    for dir in "${directories[@]}"; do
+if [ -f $SCRIPT_DIR/paths.txt ]; then
+    for dir in $(cat $SCRIPT_DIR/paths.txt | grep -v '^#' | grep -v '^$'); do
         export PATH="$dir:$PATH"
     done
 fi
