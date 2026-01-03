@@ -7,3 +7,8 @@ export NVM_DIR="/Users/$(whoami)/goinfre/.nvm"
 export HOMEBREW_CASK_OPTS="--appdir=/Users/$(whoami)/goinfre/Applications"
 
 export ANDROID_NDK_HOME="/opt/goinfre/$(whoami)/homebrew/share/android-ndk"
+
+# Android в goinfre
+export ANDROID_HOME=/opt/goinfre/$(whoami)/Android/sdk
+export GRADLE_USER_HOME=/opt/goinfre/$(whoami)/.gradle
+export ANDROID_SDK_ROOT=/opt/goinfre/$(whoami)/Android/sdk
