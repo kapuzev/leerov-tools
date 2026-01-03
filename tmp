@@ -1,0 +1,1522 @@
+=== Показываю файлы ===
+Директория: /Users/harveyfa/leerov-tools
+Включая: brewSetup clang-format-and-cppcheck.sh clean.sh commonrc config.sh crun.sh env.sh guides installAppOnProfile.sh LICENSE linuxrc macrc misc paths.txt peer-review.sh poolReview.sh pullRepo.sh pushRepo.sh README.md ru2en.sh save.sh settings setup.sh show.sh tampermonkey uninstall.sh vimrc.vim zshrc
+
+### Файл 1: ./brewSetup ###
+--- Содержимое (     121 строк) ---
+     1	#!/bin/bash
+     2	
+     3	# Функция активации Homebrew
+     4	function brewActivate {
+     5	    local user=$(whoami)
+     6	    local goinfre_path="/opt/goinfre/$user"
+     7	    local brew_path="$goinfre_path/homebrew"
+     8	    
+     9	    if [ -d "$brew_path" ]; then
+    10	        # 1. Активируем Homebrew
+    11	        eval "$($brew_path/bin/brew shellenv)"
+    12	        
+    13	        # 2. Настраиваем пути для Cask
+    14	        export HOMEBREW_CASK_OPTS="--appdir=$goinfre_path/Applications --fontdir=$goinfre_path/Library/Fonts"
+    15	        
+    16	        # 3. Настраиваем кеш в goinfre
+    17	        export HOMEBREW_CACHE="$brew_path/cache"
+    18	        
+    19	        # 4. Оптимизации для 42
+    20	        export HOMEBREW_NO_ANALYTICS=1
+    21	        export HOMEBREW_NO_AUTO_UPDATE=1
+    22	        
+    23	        # 5. Создаем необходимые директории
+    24	        mkdir -p "$goinfre_path/Applications" 2>/dev/null
+    25	        mkdir -p "$goinfre_path/Library/Fonts" 2>/dev/null
+    26	        mkdir -p "$HOMEBREW_CACHE" 2>/dev/null
+    27	        
+    28	        # 6. Создаем симлинки для совместимости
+    29	        if [ ! -L ~/Applications ] && [ ! -d ~/Applications ]; then
+    30	            ln -sf "$goinfre_path/Applications" ~/Applications 2>/dev/null
+    31	        fi
+    32	        
+    33	        if [ ! -L ~/Library/Fonts ] && [ ! -d ~/Library/Fonts ]; then
+    34	            ln -sf "$goinfre_path/Library/Fonts" ~/Library/Fonts 2>/dev/null
+    35	        fi
+    36	        
+    37	        # 7. Исправляем права для zsh автодополнения
+    38	        chmod -R go-w "$(brew --prefix)/share/zsh" 2>/dev/null || true
+    39	        
+    40	        echo "✅ Homebrew активирован"
+    41	        echo "📦 Cask приложения: $goinfre_path/Applications"
+    42	        echo "🗄️  Кеш brew: $HOMEBREW_CACHE"
+    43	        return 0
+    44	    else
+    45	        echo "❌ Homebrew не найден по пути: $brew_path"
+    46	        echo "💡 Используйте команду: brewSetup"
+    47	        return 1
+    48	    fi
+    49	}
+    50	
+    51	# Функция установки Homebrew (аналог else части вашей brsw)
+    52	function brewInstall {
+    53	    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
+    54	        echo "Homebrew уже установлен"
+    55	        brewActivate
+    56	        return 0
+    57	    fi
+    58	    
+    59	    echo "Установка Homebrew..."
+    60	    cd /opt/goinfre/$(whoami)
+    61	    git clone https://github.com/Homebrew/brew homebrew
+    62	    eval "$(/opt/goinfre/$(whoami)/homebrew/bin/brew shellenv)"
+    63	    brew update --force --quiet
+    64	    chmod -R go-w "$(brew --prefix)/share/zsh"
+    65	    brew install lcov
+    66	    echo "Homebrew успешно установлен"
+    67	}
+    68	
+    69	# Функция удаления Homebrew
+    70	function brewUninstall {
+    71	    if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
+    72	        echo "Удаление Homebrew..."
+    73	        rm -rf /opt/goinfre/$(whoami)/homebrew
+    74	        echo "Homebrew удален"
+    75	    else
+    76	        echo "Homebrew не установлен в /opt/goinfre/$(whoami)/homebrew"
+    77	    fi
+    78	}
+    79	
+    80	# Основная функция (полный аналог вашей brsw)
+    81	function brewSetup {
+    82	    local brew_path="/opt/goinfre/$(whoami)/homebrew"
+    83	    
+    84	    if [ -d "$brew_path" ]; then
+    85	        eval "$($brew_path/bin/brew shellenv)"
+    86	        chmod -R go-w "$(brew --prefix)/share/zsh"
+    87	        echo "✓ Homebrew активирован"
+    88	        return 0
+    89	    fi
+    90	    
+    91	    echo "Быстрая установка Homebrew..."
+    92	    cd /opt/goinfre/$(whoami)
+    93	    
+    94	    # Оптимальный вариант: неглубокое клонирование
+    95	    git clone --depth=1 https://github.com/Homebrew/brew homebrew
+    96	    
+    97	    eval "$($brew_path/bin/brew shellenv)"
+    98	    brew update --force --quiet
+    99	    chmod -R go-w "$(brew --prefix)/share/zsh"
+   100	    
+   101	    # Тестируем функциональность
+   102	    if brew --version > /dev/null 2>&1; then
+   103	        echo "✓ Homebrew успешно установлен и готов к работе"
+   104	        echo "✓ Доступны: brew install, brew search, brew update и другие команды"
+   105	    else
+   106	        echo "❌ Что-то пошло не так"
+   107	        return 1
+   108	    fi
+   109	}
+   110	
+   111	# Функция переустановки (удалить + установить)
+   112	function brewReinstall {
+   113	    brewUninstall
+   114	    brewInstall
+   115	}
+   116	
+   117	brew_path="/opt/goinfre/$(whoami)/homebrew/bin"
+   118	if [[ ":$PATH:" != *":$brew_path:"* ]] && [ -d "$brew_path" ]; then
+   119	    export PATH="$brew_path:$PATH"
+   120	fi
+   121	
+   122	source "installAppOnProfile.sh"--- Конец ---
+
+### Файл 2: ./clang-format-and-cppcheck.sh ###
+--- Содержимое (       3 строк) ---
+     1	clang-format --style='{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 110}' -i *.c
+     2	echo "\nCPP check:"
+     3	cppcheck --enable=all --suppress=missingIncludeSystem *.c
+--- Конец ---
+
+### Файл 3: ./clean.sh ###
+--- Содержимое (     259 строк) ---
+     1	#!/bin/bash
+     2	
+     3	SCRIPT_DIR="$HOME/leerov-tools"
+     4	
+     5	# Colors
+     6	blue=$'\033[0;34m'
+     7	reset=$'\033[0;39m'
+     8	green=$'\033[0;32m'
+     9	red=$'\033[0;31m'
+    10	purple=$'\033[0;35m'
+    11	
+    12	# Function to show disk space
+    13	show_disk_space() {
+    14	    local phase="$1"
+    15	    echo "$purple"'|----|'"$phase"'|----|'
+    16	    echo "$purple"'|'"$blue"'Size  '"$purple"'|  '"$red"'Used  '"$purple"'|  '"$green"'Avail '"$purple"'|'"$reset"
+    17	    
+    18	    # Get disk usage for the current user's home directory
+    19	    disk_info=$(df -h "$HOME" | tail -1)
+    20	    if [ -n "$disk_info" ]; then
+    21	        total=$(echo "$disk_info" | awk '{print $2}')
+    22	        used=$(echo "$disk_info" | awk '{print $3}')
+    23	        avail=$(echo "$disk_info" | awk '{print $4}')
+    24	        echo "$purple|$blue$total $purple=  $red$used $purple+  $green$avail $purple|$reset"
+    25	    else
+    26	        # Fallback to root directory
+    27	        disk_info=$(df -h / | tail -1)
+    28	        total=$(echo "$disk_info" | awk '{print $2}')
+    29	        used=$(echo "$disk_info" | awk '{print $3}')
+    30	        avail=$(echo "$disk_info" | awk '{print $4}')
+    31	        echo "$purple|$blue$total $purple=  $red$used $purple+  $green$avail $purple|$reset"
+    32	    fi
+    33	}
+    34	
+    35	# Function to display top 10 largest files with full paths
+    36	show_largest_files_full() {
+    37	    local dir="${1:-$HOME}"
+    38	    
+    39	    echo "${purple}|----| Top 10 Largest Files |----|${reset}"
+    40	    echo "${cyan}Searching in: $dir${reset}"
+    41	    echo ""
+    42	    
+    43	    # Count total files for context
+    44	    file_count=$(find "$dir" -type f 2>/dev/null | wc -l)
+    45	    echo "${yellow}📁 Total files scanned: $file_count${reset}"
+    46	    echo ""
+    47	    
+    48	    # Find and display top 10 largest files with full paths
+    49	    find "$dir" -type f -exec du -h {} + 2>/dev/null | \
+    50	        sort -rh | \
+    51	        head -10 | \
+    52	        awk -v r="$red" -v y="$yellow" -v g="$green" -v p="$purple" -v c="$cyan" -v rs="$reset" '
+    53	    BEGIN {
+    54	        print sprintf("%-8s  %s", "Size", "Full Path");
+    55	        print "--------  ------------------------------------------------------------";
+    56	    }
+    57	    {
+    58	        size = $1;
+    59	        $1 = "";
+    60	        file = substr($0, 2);
+    61	        
+    62	        # Color by size
+    63	        if (index(size, "G")) color = r;
+    64	        else if (index(size, "M") && size+0 > 100) color = y;
+    65	        else if (index(size, "M")) color = g;
+    66	        else color = c;
+    67	        
+    68	        printf "%s%8s%s  %s%s%s\n", p, size, rs, color, file, rs;
+    69	    }'
+    70	    
+    71	    echo ""
+    72	    echo "${purple}|----| File Type Analysis |----|${reset}"
+    73	    
+    74	    # Analyze by file extension
+    75	    echo ""
+    76	    echo "${bold}📊 Largest files by type:${normal}"
+    77	    echo ""
+    78	    
+    79	    # Video files
+    80	    echo "${blue}🎬 Video files (>100MB):${reset}"
+    81	    find "$dir" -type f \( -iname "*.mp4" -o -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.wmv" -o -iname "*.flv" \) \
+    82	        -size +100M -exec du -h {} + 2>/dev/null | \
+    83	        sort -rh | \
+    84	        head -3 | \
+    85	        while IFS= read -r line; do
+    86	            size=$(echo "$line" | awk '{print $1}')
+    87	            path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+    88	            printf "  %-7s %s\n" "$size" "$path"
+    89	        done
+    90	    [ $? -ne 0 ] && echo "  None found"
+    91	    
+    92	    echo ""
+    93	    
+    94	    # Archives and disk images
+    95	    echo "${blue}🗃️  Archives & Disk Images (>100MB):${reset}"
+    96	    find "$dir" -type f \( -iname "*.dmg" -o -iname "*.iso" -o -iname "*.zip" -o -iname "*.rar" -o -iname "*.7z" -o -iname "*.tar.gz" -o -iname "*.pkg" \) \
+    97	        -size +100M -exec du -h {} + 2>/dev/null | \
+    98	        sort -rh | \
+    99	        head -3 | \
+   100	        while IFS= read -r line; do
+   101	            size=$(echo "$line" | awk '{print $1}')
+   102	            path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+   103	            printf "  %-7s %s\n" "$size" "$path"
+   104	        done
+   105	    [ $? -ne 0 ] && echo "  None found"
+   106	    
+   107	    echo ""
+   108	    
+   109	    # Development files
+   110	    echo "${blue}💻 Development files (>50MB):${reset}"
+   111	    find "$dir" -type f \( -iname "*.node_modules" -o -path "*/.git/*" -o -iname "*.docker" -o -iname "*.vdi" -o -iname "*.vmdk" -o -iname "*.qcow2" \) \
+   112	        -size +50M -exec du -h {} + 2>/dev/null | \
+   113	        sort -rh | \
+   114	        head -3 | \
+   115	        while IFS= read -r line; do
+   116	            size=$(echo "$line" | awk '{print $1}')
+   117	            path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+   118	            printf "  %-7s %s\n" "$size" "$path"
+   119	        done
+   120	    [ $? -ne 0 ] && echo "  None found"
+   121	    
+   122	    echo ""
+   123	    echo "${purple}|----| Largest Directories |----|${reset}"
+   124	    echo ""
+   125	    
+   126	    # Show top 5 largest directories
+   127	    echo "${bold}📁 Top 5 Largest Directories:${normal}"
+   128	    echo ""
+   129	    du -sh "$dir"/* 2>/dev/null | sort -rh | head -5 | \
+   130	        while IFS= read -r line; do
+   131	            size=$(echo "$line" | awk '{print $1}')
+   132	            dir_path=$(echo "$line" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ *$//')
+   133	            
+   134	            if [[ "$size" == *G* ]]; then
+   135	                color="$red"
+   136	            elif [[ "$size" == *M* ]]; then
+   137	                color="$yellow"
+   138	            else
+   139	                color="$green"
+   140	            fi
+   141	            
+   142	            printf "%s%8s%s  %s%s%s\n" "$purple" "$size" "$reset" "$color" "$dir_path" "$reset"
+   143	        done
+   144	}
+   145	
+   146	# Show initial disk space
+   147	show_disk_space "Before cleanup"
+   148	
+   149	# Cleanup paths array
+   150	paths=(
+   151	    # Slack cache paths
+   152	    ~/Library/Application\ Support/Slack/Code\ Cache/
+   153	    ~/Library/Application\ Support/Slack/Cache/
+   154	    ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage/
+   155	    ~/Library/Application\ Support/Slack/Cache/*
+   156	    ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage/*
+   157	    ~/Library/Application\ Support/Slack/Cache
+   158	    ~/Library/Application\ Support/Slack/Code\ Cache
+   159	    ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage
+   160	
+   161	    # System caches
+   162	    ~/Library/Caches/*
+   163	    ~/Library/42_cache/
+   164	    ~/Library/Caches/CloudKit
+   165	    ~/Library/Caches/com.apple.akd
+   166	    ~/Library/Caches/com.apple.ap.adprivacyd
+   167	    ~/Library/Caches/com.apple.appstore
+   168	    ~/Library/Caches/com.apple.appstoreagent
+   169	    ~/Library/Caches/com.apple.cache_delete
+   170	    ~/Library/Caches/com.apple.commerce
+   171	    ~/Library/Caches/com.apple.iCloudHelper
+   172	    ~/Library/Caches/com.apple.imfoundation.IMRemoteURLConnectionAgent
+   173	    ~/Library/Caches/com.apple.keyboardservicesd
+   174	    ~/Library/Caches/com.apple.nbagent
+   175	    ~/Library/Caches/com.apple.nsservicescache.plist
+   176	    ~/Library/Caches/com.apple.nsurlsessiond
+   177	    ~/Library/Caches/storeassetd
+   178	    ~/Library/Caches/com.apple.touristd
+   179	    ~/Library/Caches/com.apple.tiswitcher.cache
+   180	    ~/Library/Caches/com.apple.preferencepanes.usercache
+   181	    ~/Library/Caches/com.apple.preferencepanes.searchindexcache
+   182	    ~/Library/Caches/com.apple.parsecd
+   183	    ~/Library/42_cache
+   184	
+   185	    # Browser caches
+   186	    ~/Library/Application\ Support/Firefox/Profiles/*/storage
+   187	    ~/Library/Application\ Support/Google/Chrome/Default/Service\ Worker/CacheStorage/*
+   188	    ~/Library/Application\ Support/Google/Chrome/Crashpad/completed/*
+   189	    ~/Library/Safari/*
+   190	    ~/Library/Containers/com.apple.Safari/Data/Library/Caches/*
+   191	
+   192	    # Development tools cache
+   193	    ~/.kube/cache/*
+   194	    ~/Library/Developer/Xcode/DerivedData/*
+   195	    ~/Library/Application\ Support/Code/User/workspaceStorage
+   196	    ~/Library/Application\ Support/Code/CacheData
+   197	    ~/Library/Application\ Support/Code/Cache
+   198	    ~/Library/Application\ Support/Code/Crashpad/completed
+   199	    ~/Library/Application\ Support/Code/CachedData
+   200	    ~/Library/Application\ Support/Code/CachedExtension
+   201	    ~/Library/Application\ Support/Code/CachedExtensions
+   202	    ~/Library/Application\ Support/Code/CachedExtensionVSIXs
+   203	    ~/Library/Application\ Support/Code/Code\ Cache
+   204	    ~/Library/Application\ Support/Code/CachedData/*
+   205	    ~/Library/Application\ Support/Code/Crashpad/completed/*
+   206	    ~/Library/Application\ Support/Code/User/workspaceStorage/*
+   207	    ~/Library/Caches/com.microsoft.VSCode.ShipIt
+   208	    ~/Library/Caches/com.microsoft.VSCode
+   209	
+   210	    # Multimedia applications cache
+   211	    ~/Library/Application\ Support/Spotify/PersistentCache
+   212	
+   213	    # Google update tools cache
+   214	    ~/Library/Caches/com.google.SoftwareUpdate
+   215	    ~/Library/Caches/com.google.Keystone
+   216	
+   217	    # Docker cache
+   218	    ~/Library/Containers/com.docker.docker/Data/vms/*
+   219	
+   220	    # System trash
+   221	    ~/.Trash/*
+   222	
+   223	    # My trash
+   224	    $SCRIPT_DIR/*.out
+   225	    $HOME/Desktop/*.log
+   226	    $HOME/Desktop/*.tmp
+   227	)
+   228	
+   229	# Count cleaned items
+   230	cleaned_count=0
+   231	
+   232	# Cleanup loop
+   233	for path in "${paths[@]}"; do
+   234	    # Expand ~ to home directory
+   235	    expanded_path="${path/#\~/$HOME}"
+   236	    
+   237	    if [ -e "$expanded_path" ] || [ -L "$expanded_path" ]; then
+   238	        if rm -rf "$expanded_path" 2>/dev/null; then
+   239	            cleaned_count=$((cleaned_count + 1))
+   240	        fi
+   241	    fi
+   242	done
+   243	
+   244	# Clean old downloads (30+ days old)
+   245	find ~/Downloads -name "*.dmg" -mtime +30 -delete 2>/dev/null
+   246	find ~/Downloads -name "*.zip" -mtime +30 -delete 2>/dev/null
+   247	find ~/Downloads -name "*.pkg" -mtime +30 -delete 2>/dev/null
+   248	
+   249	# Additional cache cleanup
+   250	find ~/Library/Application\ Support -type d -iname "*cache*" 2>/dev/null -exec rm -rf {} \;
+   251	
+   252	echo ""
+   253	echo "$purple"'Cleaned '"$cleaned_count"' items'
+   254	
+   255	# Show disk space after cleanup
+   256	echo ""
+   257	show_disk_space "After cleanup"
+   258	echo "$purple"'|----|Cleanup ended|----|'"$reset"
+   259	
+   260	show_largest_files_full--- Конец ---
+
+### Файл 4: ./commonrc ###
+[Бинарный файл]
+Тип: empty
+Размер:   0B
+
+### Файл 5: ./config.sh ###
+[Бинарный файл]
+Тип: empty
+Размер:   0B
+
+### Файл 6: ./crun.sh ###
+--- Содержимое (       8 строк) ---
+     1	if [ -z "$1" ]; then
+     2	    echo "Ошибка: Укажите файл для компиляции."
+     3	    return 1
+     4	fi
+     5	FILE="$1"
+     6	shift
+     7	EXTRA_FLAGS="$@"
+     8	gcc -Wall -Werror -Wextra -o main.out "$FILE" $EXTRA_FLAGS && ./main.out && rm main.out
+--- Конец ---
+
+### Файл 7: ./env.sh ###
+--- Содержимое (       0 строк) ---
+     1	export HOMEBREW_NO_AUTO_UPDATE=1--- Конец ---
+
+### Файл 8: ./installAppOnProfile.sh ###
+--- Содержимое (      32 строк) ---
+     1	function bi {
+     2	    local package_name=$1
+     3	    
+     4	    # Проверяем, установлен ли Homebrew
+     5	    if ! command -v brew &> /dev/null; then
+     6	        echo "❌ Homebrew не установлен"
+     7	        return 1
+     8	    fi
+     9	    
+    10	
+    11	    
+    12	    # Если formula не найдена, пробуем как cask (графическое приложение)
+    13	    echo "🔄 Пробуем установить как cask..."
+    14	    if brew install --cask "$package_name" --appdir="$HOME/Applications" 2>/dev/null; then
+    15	        echo "✅ $package_name успешно установлен как cask"
+    16	        return 0
+    17	    fi
+    18	
+    19	    echo "📦 Устанавливаем $package_name..."
+    20	    
+    21	    # Сначала пробуем установить как formula (консольная утилита)
+    22	    if brew install "$package_name"; then
+    23	        echo "✅ $package_name успешно установлен как formula"
+    24	        return 0
+    25	    fi
+    26	    
+    27	    echo "❌ Не удалось установить $package_name"
+    28	    echo "🔍 Проверьте существование пакета: brew search $package_name"
+    29	    return 1
+    30	}
+    31	
+    32	# Создаем директорию Applications если её нет
+    33	mkdir -p "$HOME/Applications"--- Конец ---
+
+### Файл 9: ./LICENSE ###
+--- Содержимое (      21 строк) ---
+     1	MIT License
+     2	
+     3	Copyright (c) 2025 Владимир
+     4	
+     5	Permission is hereby granted, free of charge, to any person obtaining a copy
+     6	of this software and associated documentation files (the "Software"), to deal
+     7	in the Software without restriction, including without limitation the rights
+     8	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+     9	copies of the Software, and to permit persons to whom the Software is
+    10	furnished to do so, subject to the following conditions:
+    11	
+    12	The above copyright notice and this permission notice shall be included in all
+    13	copies or substantial portions of the Software.
+    14	
+    15	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    16	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    17	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    18	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    19	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    20	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    21	SOFTWARE.
+--- Конец ---
+
+### Файл 10: ./linuxrc ###
+--- Содержимое (     286 строк) ---
+     1	# Kali Linux Start
+     2	
+     3	# ~/.zshrc file for zsh interactive shells.
+     4	# see /usr/share/doc/zsh/examples/zshrc for examples
+     5	
+     6	setopt autocd              # change directory just by typing its name
+     7	#setopt correct            # auto correct mistakes
+     8	setopt interactivecomments # allow comments in interactive mode
+     9	setopt magicequalsubst     # enable filename expansion for arguments of the form ‘anything=expression’
+    10	setopt nonomatch           # hide error message if there is no match for the pattern
+    11	setopt notify              # report the status of background jobs immediately
+    12	setopt numericglobsort     # sort filenames numerically when it makes sense
+    13	setopt promptsubst         # enable command substitution in prompt
+    14	
+    15	WORDCHARS=${WORDCHARS//\/} # Don't consider certain characters part of the word
+    16	
+    17	# hide EOL sign ('%')
+    18	PROMPT_EOL_MARK=""
+    19	
+    20	# configure key keybindings
+    21	bindkey -e                                        # emacs key bindings
+    22	bindkey ' ' magic-space                           # do history expansion on space
+    23	bindkey '^U' backward-kill-line                   # ctrl + U
+    24	bindkey '^[[3;5~' kill-word                       # ctrl + Supr
+    25	bindkey '^[[3~' delete-char                       # delete
+    26	bindkey '^[[1;5C' forward-word                    # ctrl + ->
+    27	bindkey '^[[1;5D' backward-word                   # ctrl + <-
+    28	bindkey '^[[5~' beginning-of-buffer-or-history    # page up
+    29	bindkey '^[[6~' end-of-buffer-or-history          # page down
+    30	bindkey '^[[H' beginning-of-line                  # home
+    31	bindkey '^[[F' end-of-line                        # end
+    32	bindkey '^[[Z' undo                               # shift + tab undo last action
+    33	
+    34	# enable completion features
+    35	autoload -Uz compinit
+    36	compinit -d ~/.cache/zcompdump
+    37	zstyle ':completion:*:*:*:*:*' menu select
+    38	zstyle ':completion:*' auto-description 'specify: %d'
+    39	zstyle ':completion:*' completer _expand _complete
+    40	zstyle ':completion:*' format 'Completing %d'
+    41	zstyle ':completion:*' group-name ''
+    42	zstyle ':completion:*' list-colors ''
+    43	zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
+    44	zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+    45	zstyle ':completion:*' rehash true
+    46	zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+    47	zstyle ':completion:*' use-compctl false
+    48	zstyle ':completion:*' verbose true
+    49	zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+    50	
+    51	# History configurations
+    52	HISTFILE=~/.zsh_history
+    53	HISTSIZE=1000
+    54	SAVEHIST=2000
+    55	setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
+    56	setopt hist_ignore_dups       # ignore duplicated commands history list
+    57	setopt hist_ignore_space      # ignore commands that start with space
+    58	setopt hist_verify            # show command with history expansion to user before running it
+    59	#setopt share_history         # share command history data
+    60	
+    61	# force zsh to show the complete history
+    62	alias history="history 0"
+    63	
+    64	# configure `time` format
+    65	TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
+    66	
+    67	# make less more friendly for non-text input files, see lesspipe(1)
+    68	#[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+    69	
+    70	# set variable identifying the chroot you work in (used in the prompt below)
+    71	if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    72	    debian_chroot=$(cat /etc/debian_chroot)
+    73	fi
+    74	
+    75	# set a fancy prompt (non-color, unless we know we "want" color)
+    76	case "$TERM" in
+    77	    xterm-color|*-256color) color_prompt=yes;;
+    78	esac
+    79	
+    80	# uncomment for a colored prompt, if the terminal has the capability; turned
+    81	# off by default to not distract the user: the focus in a terminal window
+    82	# should be on the output of commands, not on the prompt
+    83	force_color_prompt=yes
+    84	
+    85	if [ -n "$force_color_prompt" ]; then
+    86	    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    87	        # We have color support; assume it's compliant with Ecma-48
+    88	        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    89	        # a case would tend to support setf rather than setaf.)
+    90	        color_prompt=yes
+    91	    else
+    92	        color_prompt=
+    93	    fi
+    94	fi
+    95	
+    96	configure_prompt() {
+    97	    prompt_symbol=㉿
+    98	    # Skull emoji for root terminal
+    99	    #[ "$EUID" -eq 0 ] && prompt_symbol=💀
+   100	    case "$PROMPT_ALTERNATIVE" in
+   101	        twoline)
+   102	            PROMPT=$'%F{%(#.blue.green)}┌──${debian_chroot:+($debian_chroot)─}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))─}(%B%F{%(#.red.blue)}%n'$prompt_symbol$'%m%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]\n└─%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
+   103	            # Right-side prompt with exit codes and background processes
+   104	            #RPROMPT=$'%(?.. %? %F{red}%B⨯%b%F{reset})%(1j. %j %F{yellow}%B⚙%b%F{reset}.)'
+   105	            ;;
+   106	        oneline)
+   107	            PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(#.#.$) '
+   108	            RPROMPT=
+   109	            ;;
+   110	        backtrack)
+   111	            PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{red}%n@%m%b%F{reset}:%B%F{blue}%~%b%F{reset}%(#.#.$) '
+   112	            RPROMPT=
+   113	            ;;
+   114	    esac
+   115	    unset prompt_symbol
+   116	}
+   117	
+   118	# The following block is surrounded by two delimiters.
+   119	# These delimiters must not be modified. Thanks.
+   120	# START KALI CONFIG VARIABLES
+   121	PROMPT_ALTERNATIVE=twoline
+   122	NEWLINE_BEFORE_PROMPT=yes
+   123	# STOP KALI CONFIG VARIABLES
+   124	
+   125	if [ "$color_prompt" = yes ]; then
+   126	    # override default virtualenv indicator in prompt
+   127	    VIRTUAL_ENV_DISABLE_PROMPT=1
+   128	
+   129	    configure_prompt
+   130	
+   131	    # enable syntax-highlighting
+   132	    if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+   133	        . /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+   134	        ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
+   135	        ZSH_HIGHLIGHT_STYLES[default]=none
+   136	        ZSH_HIGHLIGHT_STYLES[unknown-token]=underline
+   137	        ZSH_HIGHLIGHT_STYLES[reserved-word]=fg=cyan,bold
+   138	        ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=green,underline
+   139	        ZSH_HIGHLIGHT_STYLES[global-alias]=fg=green,bold
+   140	        ZSH_HIGHLIGHT_STYLES[precommand]=fg=green,underline
+   141	        ZSH_HIGHLIGHT_STYLES[commandseparator]=fg=blue,bold
+   142	        ZSH_HIGHLIGHT_STYLES[autodirectory]=fg=green,underline
+   143	        ZSH_HIGHLIGHT_STYLES[path]=bold
+   144	        ZSH_HIGHLIGHT_STYLES[path_pathseparator]=
+   145	        ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]=
+   146	        ZSH_HIGHLIGHT_STYLES[globbing]=fg=blue,bold
+   147	        ZSH_HIGHLIGHT_STYLES[history-expansion]=fg=blue,bold
+   148	        ZSH_HIGHLIGHT_STYLES[command-substitution]=none
+   149	        ZSH_HIGHLIGHT_STYLES[command-substitution-delimiter]=fg=magenta,bold
+   150	        ZSH_HIGHLIGHT_STYLES[process-substitution]=none
+   151	        ZSH_HIGHLIGHT_STYLES[process-substitution-delimiter]=fg=magenta,bold
+   152	        ZSH_HIGHLIGHT_STYLES[single-hyphen-option]=fg=green
+   153	        ZSH_HIGHLIGHT_STYLES[double-hyphen-option]=fg=green
+   154	        ZSH_HIGHLIGHT_STYLES[back-quoted-argument]=none
+   155	        ZSH_HIGHLIGHT_STYLES[back-quoted-argument-delimiter]=fg=blue,bold
+   156	        ZSH_HIGHLIGHT_STYLES[single-quoted-argument]=fg=yellow
+   157	        ZSH_HIGHLIGHT_STYLES[double-quoted-argument]=fg=yellow
+   158	        ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]=fg=yellow
+   159	        ZSH_HIGHLIGHT_STYLES[rc-quote]=fg=magenta
+   160	        ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]=fg=magenta,bold
+   161	        ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]=fg=magenta,bold
+   162	        ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]=fg=magenta,bold
+   163	        ZSH_HIGHLIGHT_STYLES[assign]=none
+   164	        ZSH_HIGHLIGHT_STYLES[redirection]=fg=blue,bold
+   165	        ZSH_HIGHLIGHT_STYLES[comment]=fg=black,bold
+   166	        ZSH_HIGHLIGHT_STYLES[named-fd]=none
+   167	        ZSH_HIGHLIGHT_STYLES[numeric-fd]=none
+   168	        ZSH_HIGHLIGHT_STYLES[arg0]=fg=cyan
+   169	        ZSH_HIGHLIGHT_STYLES[bracket-error]=fg=red,bold
+   170	        ZSH_HIGHLIGHT_STYLES[bracket-level-1]=fg=blue,bold
+   171	        ZSH_HIGHLIGHT_STYLES[bracket-level-2]=fg=green,bold
+   172	        ZSH_HIGHLIGHT_STYLES[bracket-level-3]=fg=magenta,bold
+   173	        ZSH_HIGHLIGHT_STYLES[bracket-level-4]=fg=yellow,bold
+   174	        ZSH_HIGHLIGHT_STYLES[bracket-level-5]=fg=cyan,bold
+   175	        ZSH_HIGHLIGHT_STYLES[cursor-matchingbracket]=standout
+   176	    fi
+   177	else
+   178	    PROMPT='${debian_chroot:+($debian_chroot)}%n@%m:%~%(#.#.$) '
+   179	fi
+   180	unset color_prompt force_color_prompt
+   181	
+   182	toggle_oneline_prompt(){
+   183	    if [ "$PROMPT_ALTERNATIVE" = oneline ]; then
+   184	        PROMPT_ALTERNATIVE=twoline
+   185	    else
+   186	        PROMPT_ALTERNATIVE=oneline
+   187	    fi
+   188	    configure_prompt
+   189	    zle reset-prompt
+   190	}
+   191	zle -N toggle_oneline_prompt
+   192	bindkey ^P toggle_oneline_prompt
+   193	
+   194	# If this is an xterm set the title to user@host:dir
+   195	case "$TERM" in
+   196	xterm*|rxvt*|Eterm|aterm|kterm|gnome*|alacritty)
+   197	    TERM_TITLE=$'\e]0;${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%n@%m: %~\a'
+   198	    ;;
+   199	*)
+   200	    ;;
+   201	esac
+   202	
+   203	precmd() {
+   204	    # Print the previously configured title
+   205	    print -Pnr -- "$TERM_TITLE"
+   206	
+   207	    # Print a new line before the prompt, but only if it is not the first line
+   208	    if [ "$NEWLINE_BEFORE_PROMPT" = yes ]; then
+   209	        if [ -z "$_NEW_LINE_BEFORE_PROMPT" ]; then
+   210	            _NEW_LINE_BEFORE_PROMPT=1
+   211	        else
+   212	            print ""
+   213	        fi
+   214	    fi
+   215	}
+   216	
+   217	# enable color support of ls, less and man, and also add handy aliases
+   218	if [ -x /usr/bin/dircolors ]; then
+   219	    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+   220	    export LS_COLORS="$LS_COLORS:ow=30;44:" # fix ls color for folders with 777 permissions
+   221	
+   222	    alias ls='ls --color=auto'
+   223	    #alias dir='dir --color=auto'
+   224	    #alias vdir='vdir --color=auto'
+   225	
+   226	    alias grep='grep --color=auto'
+   227	    alias fgrep='fgrep --color=auto'
+   228	    alias egrep='egrep --color=auto'
+   229	    alias diff='diff --color=auto'
+   230	    alias ip='ip --color=auto'
+   231	
+   232	    export LESS_TERMCAP_mb=$'\E[1;31m'     # begin blink
+   233	    export LESS_TERMCAP_md=$'\E[1;36m'     # begin bold
+   234	    export LESS_TERMCAP_me=$'\E[0m'        # reset bold/blink
+   235	    export LESS_TERMCAP_so=$'\E[01;33m'    # begin reverse video
+   236	    export LESS_TERMCAP_se=$'\E[0m'        # reset reverse video
+   237	    export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
+   238	    export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
+   239	
+   240	    # Take advantage of $LS_COLORS for completion as well
+   241	    zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+   242	    zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+   243	fi
+   244	
+   245	# some more ls aliases
+   246	alias ll='ls -l'
+   247	alias la='ls -A'
+   248	alias l='ls -CF'
+   249	
+   250	# enable auto-suggestions based on the history
+   251	if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+   252	    . /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+   253	    # change suggestion color
+   254	    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#999'
+   255	fi
+   256	
+   257	# enable command-not-found if installed
+   258	if [ -f /etc/zsh_command_not_found ]; then
+   259	    . /etc/zsh_command_not_found
+   260	fi
+   261	
+   262	# Kali Linux End
+   263	
+   264	bind '"\C-k":"clear\n"'
+   265	bind '"\C-w":"exit\n"'
+   266	alias q='exit'
+   267	lines() {
+   268	    # Если аргументов нет, используем стандартные маски *.c и *.h
+   269	    if [ $# -eq 0 ]; then
+   270	        patterns=('*.c' '*.h')
+   271	    else
+   272	        patterns=("$@")
+   273	    fi
+   274	    
+   275	    # Создаем условие для find на основе всех переданных масок
+   276	    find_condition=()
+   277	    for pattern in "${patterns[@]}"; do
+   278	        find_condition+=(-name "$pattern" -o)
+   279	    done
+   280	    
+   281	    # Удаляем последнее лишнее "-o"
+   282	    unset 'find_condition[${#find_condition[@]}-1]'
+   283	    
+   284	    # Выполняем поиск и подсчет
+   285	    find . -type f \( "${find_condition[@]}" \) -print0 | xargs -0 cloc --by-file
+   286	}
+--- Конец ---
+
+### Файл 11: ./macrc ###
+--- Содержимое (      72 строк) ---
+     1	source brewSetup
+     2	
+     3	brewSetup
+     4	
+     5	# Basic Zsh configuration for macOS
+     6	setopt autocd
+     7	setopt interactivecomments
+     8	setopt magicequalsubst
+     9	setopt nonomatch
+    10	setopt notify
+    11	setopt numericglobsort
+    12	setopt promptsubst
+    13	
+    14	WORDCHARS=${WORDCHARS//\/}
+    15	PROMPT_EOL_MARK=""
+    16	
+    17	# Key bindings
+    18	bindkey -e
+    19	bindkey ' ' magic-space
+    20	bindkey '^U' backward-kill-line
+    21	bindkey '^[[3~' delete-char
+    22	bindkey '^[[1;5C' forward-word
+    23	bindkey '^[[1;5D' backward-word
+    24	
+    25	# Completion
+    26	autoload -Uz compinit
+    27	compinit -d ~/.cache/zcompdump
+    28	zstyle ':completion:*' menu select
+    29	
+    30	# History
+    31	HISTFILE=~/.zsh_history
+    32	HISTSIZE=1000
+    33	SAVEHIST=2000
+    34	
+    35	# Aliases
+    36	alias ll='ls -l'
+    37	alias la='ls -A'
+    38	alias l='ls -CF'
+    39	alias q='exit'
+    40	
+    41	# Homebrew paths (Intel Mac)
+    42	if [ -d /usr/local/opt ]; then
+    43	    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+    44	fi
+    45	
+    46	# Homebrew paths (Apple Silicon Mac)
+    47	if [ -d /opt/homebrew/opt ]; then
+    48	    export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+    49	    export PATH="/opt/homebrew/bin:$PATH"
+    50	fi
+    51	
+    52	# Enable colors
+    53	export CLICOLOR=1
+    54	export LSCOLORS=ExFxBxDxCxegedabagacad
+    55	
+    56	# Load plugins if available
+    57	if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+    58	    source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    59	fi
+    60	
+    61	if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    62	    source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+    63	fi
+    64	
+    65	# alias k="osascript $SCRIPT_DIR/caps-to-esc.scpt > /dev/null 2>&1"
+    66	
+    67	# Fastfetch and clear
+    68	if ! command -v fastfetch &> /dev/null; then
+    69	    command -v brew &> /dev/null || brewSetup
+    70	    brew install fastfetch
+    71	fi
+    72	clear
+    73	fastfetch--- Конец ---
+
+### Файл 12: ./paths.txt ###
+--- Содержимое (       8 строк) ---
+     1	# ~/.paths - файл только с путями
+     2	/Applications/Visual Studio Code.app/Contents/Resources/app/bin
+     3	/Applications/Postgres.app/Contents/Versions/latest/bin
+     4	
+     5	
+     6	# Дополнительные пути (примеры)
+     7	# /usr/local/bin
+     8	# /opt/homebrew/bin
+     9	# $HOME/.local/bin--- Конец ---
+
+### Файл 13: ./peer-review.sh ###
+--- Содержимое (      75 строк) ---
+     1	#!/bin/bash
+     2	if [ -d "review" ]; then
+     3	    rm -r "review"
+     4	fi
+     5	if [[ "$1" == ssh://* || "$1" == https://* ]]; then
+     6	    REPO_URL="$1"
+     7	    git clone "$REPO_URL" review || exit 1
+     8	echo
+     9	    cd review/src || { echo "review/src directory missing"; exit 1; }
+    10	    git switch develop || { echo "develop branch not found"; exit 1; }
+    11	echo
+    12	
+    13	REPO_NAME=$(basename "$REPO_URL" .git)
+    14	AUTHOR=$(echo "$REPO_URL" | awk -F'/' '{print $(NF-1)}')
+    15	TARGET_DIR="$HOME/reviews/${REPO_NAME}-${AUTHOR}"
+    16	
+    17	mkdir -p "$TARGET_DIR"
+    18	cp -r ./* "$TARGET_DIR/"
+    19	else
+    20	    LOCAL_DIR="$1"
+    21	    if [ ! -d "$LOCAL_DIR/src" ]; then
+    22	        echo "Локальная папка $LOCAL_DIR не содержит директорию src."
+    23	echo
+    24	        exit 1
+    25	    fi
+    26	    cd "$LOCAL_DIR/src" || exit 1
+    27	fi
+    28	echo "Проверка на clang-format и cppcheck..."
+    29	echo "Clang format:"
+    30	clang-format --style='{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 110}' -n *.c
+    31	echo
+    32	echo "CPP Check:"
+    33	cppcheck --enable=all --suppress=missingIncludeSystem *.c
+    34	echo
+    35	compiled_files=()
+    36	for file in *.c; do
+    37	    if [ -f "$file" ]; then
+    38	        output_name="${file%.c}.out"
+    39	        if gcc -Wall -Werror -Wextra -o "$output_name" "$file"; then
+    40	            compiled_files+=("$output_name")
+    41	        fi
+    42	    fi
+    43	done
+    44	
+    45	while true; do
+    46	    echo "0. Exit and cleanup"
+    47	    for i in "${!compiled_files[@]}"; do
+    48	        echo "$((i+1)). Run ${compiled_files[$i]}"
+    49	    done
+    50	    
+    51	    read -p "Choice: " choice
+    52		
+    53	echo
+    54	    case $choice in
+    55	        0)
+    56	            cd ../..
+    57	            rm -rf review
+    58	            exit 0
+    59	            ;;
+    60	        *)
+    61	            if [[ $choice -gt 0 && $choice -le ${#compiled_files[@]} ]]; then
+    62	                index=$((choice-1))
+    63	                file_to_run="${compiled_files[$index]}"
+    64	                echo "Запуск $file_to_run..."
+    65	#output_file=$(mktemp)
+    66	#./"$file_to_run" > "$output_file" 2>&1
+    67	leaks -atExit -- ./"$file_to_run" # | grep LEAK:
+    68	#cat "$output_file"
+    69	#rm "$output_file"
+    70	            else
+    71	                echo "Неверный выбор. Попробуйте снова."
+    72	            fi
+    73	            ;;
+    74	    esac
+    75	done
+--- Конец ---
+
+### Файл 14: ./poolReview.sh ###
+--- Содержимое (      74 строк) ---
+     1	#!/bin/bash
+     2	
+     3	p2p () {
+     4	    git clone $1 review -b develop
+     5	    code review
+     6	    check
+     7	}
+     8	
+     9	check() {
+    10	    if [ $# -eq 0 ]; then
+    11	        local PROJECT_PATH="review"
+    12	        echo "Используется путь по умолчанию: $PROJECT_PATH"
+    13	    else
+    14	        local PROJECT_PATH="$1"
+    15	    fi
+    16	    
+    17	    local ORIGINAL_DIR="$PWD"
+    18	    
+    19	    if [ ! -d "$PROJECT_PATH" ]; then
+    20	        echo "Ошибка: Папка $PROJECT_PATH не существует"
+    21	        return 1
+    22	    fi
+    23	    
+    24	    if [ ! -d "$PROJECT_PATH/src" ]; then
+    25	        echo "Ошибка: Папка $PROJECT_PATH не содержит директорию src"
+    26	        return 1
+    27	    fi
+    28	    
+    29	    cd "$PROJECT_PATH/src" || return 1
+    30	    
+    31	    echo "=== ПРОВЕРКА ПРОЕКТА: $(basename "$PROJECT_PATH") ==="
+    32	    
+    33	    # 1. Проверка clang-format
+    34	    echo -e "\n1. ПРОВЕРКА СТИЛЯ КОДА (clang-format):"
+    35	    local CLANG_FORMAT_CONFIG=""
+    36	    if [ -f "../../materials/linters/.clang-format" ]; then
+    37	        CLANG_FORMAT_CONFIG="--style=file"
+    38	        echo "Используется конфиг: ../../materials/linters/.clang-format"
+    39	    else
+    40	        CLANG_FORMAT_CONFIG="--style='{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 110}'"
+    41	        echo "Используется стандартный стиль Google"
+    42	    fi
+    43	    
+    44	    clang-format $CLANG_FORMAT_CONFIG -n *.c *.h 2>/dev/null
+    45	    
+    46	    # 2. Статический анализ cppcheck - ИСПРАВЛЕНО
+    47	    echo -e "\n2. СТАТИЧЕСКИЙ АНАЛИЗ (cppcheck):"
+    48	    cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --std=c11 .
+    49	    
+    50	    # 3. Компиляция всех .c файлов в один исполняемый файл
+    51	    echo -e "\n3. КОМПИЛЯЦИЯ ВСЕХ ФАЙЛОВ:"
+    52	    if ls *.c >/dev/null 2>&1; then
+    53	        echo "Компиляция всех .c файлов в program.out..."
+    54	        if clang -Wall -Werror -Wextra -std=c11 -o program.out *.c; then
+    55	            echo "✓ Успешно: program.out"
+    56	            
+    57	            # 4. Запуск с проверкой утечек
+    58	            echo -e "\n4. ЗАПУСК И ПРОВЕРКА УТЕЧЕК:"
+    59	            echo "Запуск program.out с проверкой утечек..."
+    60	            leaks -atExit -- ./program.out
+    61	        else
+    62	            echo "✗ Ошибка компиляции"
+    63	        fi
+    64	    else
+    65	        echo "Нет .c файлов для компиляции"
+    66	    fi
+    67	    
+    68	    # Очистка
+    69	    echo -e "\nОчистка..."
+    70	    rm -f program.out
+    71	    
+    72	    # Возврат в исходную директорию
+    73	    cd "$ORIGINAL_DIR" || return 1
+    74	    echo -e "\n=== ПРОВЕРКА ЗАВЕРШЕНА ==="
+    75	}--- Конец ---
+
+### Файл 15: ./pullRepo.sh ###
+--- Содержимое (       2 строк) ---
+     1	#!/bin/bash
+     2	nohup git pull > /dev/null 2>&1 &
+--- Конец ---
+
+### Файл 16: ./pushRepo.sh ###
+--- Содержимое (     181 строк) ---
+     1	#!/bin/bash
+     2	
+     3	# Функция для определения протокола клонирования
+     4	get_clone_protocol() {
+     5	    local remote_url
+     6	    remote_url=$(git remote get-url origin 2>/dev/null)
+     7	    
+     8	    if [ -z "$remote_url" ]; then
+     9	        echo "unknown"
+    10	        return 1
+    11	    fi
+    12	    
+    13	    # Определяем протокол
+    14	    if [[ "$remote_url" == https://github.com/* ]]; then
+    15	        echo "https"
+    16	    elif [[ "$remote_url" == git@github.com:* ]]; then
+    17	        echo "ssh"
+    18	    elif [[ "$remote_url" == git://github.com/* ]]; then
+    19	        echo "git"
+    20	    else
+    21	        # Проверяем другие возможные форматы
+    22	        if [[ "$remote_url" == http*://* ]]; then
+    23	            echo "http"
+    24	        elif [[ "$remote_url" == ssh://* ]]; then
+    25	            echo "ssh"
+    26	        elif [[ "$remote_url" == git://* ]]; then
+    27	            echo "git"
+    28	        else
+    29	            echo "unknown"
+    30	        fi
+    31	    fi
+    32	}
+    33	
+    34	# Функция git_push только для SSH
+    35	git_push_ssh_only() {
+    36	    echo "=== Проверка SSH протокола ==="
+    37	    
+    38	    # Проверяем, находимся ли в git репозитории
+    39	    if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    40	        echo "Ошибка: Это не git репозиторий"
+    41	        return 1
+    42	    fi
+    43	    
+    44	    # Проверяем наличие remote origin
+    45	    if ! git remote get-url origin > /dev/null 2>&1; then
+    46	        echo "Ошибка: Remote 'origin' не настроен"
+    47	        return 1
+    48	    fi
+    49	    
+    50	    # Получаем протокол клонирования
+    51	    local protocol
+    52	    protocol=$(get_clone_protocol)
+    53	    
+    54	    # Проверяем, что репозиторий склонирован по SSH
+    55	    if [ "$protocol" != "ssh" ]; then
+    56	        echo "Отмена: Репозиторий склонирован по протоколу '$protocol', а требуется 'ssh'"
+    57	        echo "URL: $(git remote get-url origin)"
+    58	        echo ""
+    59	        echo "Чтобы изменить протокол на SSH выполните:"
+    60	        echo "git remote set-url origin git@github.com:username/repository.git"
+    61	        return 1
+    62	    fi
+    63	    
+    64	    echo "✓ Репозиторий склонирован по SSH"
+    65	    
+    66	    # Проверяем SSH доступ
+    67	    echo "Проверяем SSH подключение..."
+    68	    if ! ssh -o BatchMode=yes -o ConnectTimeout=5 -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+    69	        echo "Ошибка: SSH подключение к GitHub не работает"
+    70	        echo "Проверьте:"
+    71	        echo "1. Наличие SSH ключей: ls -la ~/.ssh/"
+    72	        echo "2. Ключ добавлен в ssh-agent: ssh-add -l"
+    73	        echo "3. Ключ добавлен в GitHub: https://github.com/settings/keys"
+    74	        return 1
+    75	    fi
+    76	    
+    77	    echo "✓ SSH подключение работает"
+    78	    
+    79	    # Вызываем основную функцию git_push
+    80	    git_push "$@"
+    81	}
+    82	
+    83	# Основная функция git_push (без проверки протокола)
+    84	git_push() {
+    85	    local commit_message="${1:-Autocommit}"
+    86	    
+    87	    echo "=== Начинаем push операцию ==="
+    88	    
+    89	    # Выполняем pull
+    90	    echo "Выполняем pull..."
+    91	    if ! git pull --strategy=recursive; then  # ИЗМЕНЕНО: merge → recursive
+    92	        echo "Ошибка при выполнении pull. Разрешите конфликты и попробуйте снова."
+    93	        return 1
+    94	    fi
+    95	    
+    96	    DATE=$(date +"%Y-%m-%d")
+    97	    TIME=$(date +"%H:%M:%S")
+    98	    
+    99	    # Получаем список изменённых файлов
+   100	    echo "Анализируем изменения..."
+   101	    FILES_LIST=$(git status --porcelain | awk '{print "- "$2}')
+   102	    
+   103	    if [ -z "$FILES_LIST" ]; then
+   104	        echo "Нет изменений для коммита."
+   105	        return 0
+   106	    fi
+   107	    
+   108	    echo "Изменённые файлы:"
+   109	    echo "$FILES_LIST"
+   110	    
+   111	    # Формируем сообщение коммита
+   112	    MESSAGE="$DATE $TIME: $commit_message
+   113	
+   114	$FILES_LIST"
+   115	    
+   116	    echo ""
+   117	    echo "Добавляем файлы..."
+   118	    if ! git add .; then
+   119	        echo "Ошибка при добавлении файлов."
+   120	        return 1
+   121	    fi
+   122	    
+   123	    echo "Создаём коммит..."
+   124	    if ! git commit -m "$MESSAGE"; then
+   125	        echo "Ошибка при создании коммита."
+   126	        return 1
+   127	    fi
+   128	    
+   129	    echo "Отправляем изменения..."
+   130	    if ! git push; then
+   131	        echo "Ошибка при отправке изменений."
+   132	        return 1
+   133	    fi
+   134	    
+   135	    echo ""
+   136	    echo "✅ Успешно! Изменения отправлены в репозиторий."
+   137	}
+   138	
+   139	# Альтернативная версия с тихим выполнением (для фоновых задач)
+   140	git_push_ssh_only_silent() {
+   141	    # Быстрая проверка SSH протокола
+   142	    local remote_url
+   143	    remote_url=$(git remote get-url origin 2>/dev/null)
+   144	    
+   145	    if [ -z "$remote_url" ]; then
+   146	        return 1
+   147	    fi
+   148	    
+   149	    # Проверяем, что это SSH протокол GitHub
+   150	    if [[ ! "$remote_url" == git@github.com:* ]] && [[ ! "$remote_url" == ssh://git@github.com/* ]]; then
+   151	        return 1  # Не SSH протокол
+   152	    fi
+   153	    
+   154	    # Быстрая проверка SSH подключения
+   155	    if ! ssh -o BatchMode=yes -o ConnectTimeout=3 -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+   156	        return 1  # SSH не работает
+   157	    fi
+   158	    
+   159	    # Тихий pull
+   160	    git pull --strategy=recursive --quiet 2>/dev/null  # ИЗМЕНЕНО: merge → recursive
+   161	    
+   162	    # Проверяем есть ли изменения
+   163	    if [ -z "$(git status --porcelain)" ]; then
+   164	        return 0  # Нет изменений
+   165	    fi
+   166	    
+   167	    DATE=$(date +"%Y-%m-%d")
+   168	    TIME=$(date +"%H:%M:%S")
+   169	    COMMIT_MSG="${1:-Autocommit}"
+   170	    
+   171	    FILES_LIST=$(git status --porcelain | awk '{print "- "$2}')
+   172	    MESSAGE="$DATE $TIME: $COMMIT_MSG
+   173	
+   174	$FILES_LIST"
+   175	    
+   176	    # Тихие операции
+   177	    git add . --quiet 2>/dev/null
+   178	    git commit -m "$MESSAGE" --quiet 2>/dev/null
+   179	    git push --quiet 2>/dev/null
+   180	    
+   181	    return 0
+   182	}--- Конец ---
+
+### Файл 17: ./README.md ###
+--- Содержимое (      22 строк) ---
+     1	# leerov-tools
+     2	
+     3	
+     4	# Tampermonkey homepage
+     5	```
+     6	https://www.tampermonkey.net/
+     7	```
+     8	
+     9	
+    10	## Setup tools
+    11	### For you
+    12	``` bash
+    13	git clone https://github.com/kapuzev/leerov-tools.git ~/leerov-tools && bash ~/leerov-tools/setup.sh
+    14	```
+    15	### For me
+    16	``` bash
+    17	git clone git@github.com:kapuzev/leerov-tools.git ~/leerov-tools && bash ~/leerov-tools/setup.sh
+    18	```
+    19	## Uninstall
+    20	```
+    21	./leerov-tools/uninstall.sh
+    22	```
+--- Конец ---
+
+### Файл 18: ./ru2en.sh ###
+--- Содержимое (      66 строк) ---
+     1	function transliterate-command-line() {
+     2	    local mapping=(
+     3	        "й q" "ц w" "у e" "к r" "е t" "н y" "г u" "ш i" "щ o" "з p" "х [" "ъ ]"
+     4	        "ф a" "ы s" "в d" "а f" "п g" "р h" "о j" "л k" "д l" "ж ;" "э '"
+     5	        "я z" "ч x" "с c" "м v" "и b" "т n" "ь m" "б ," "ю ." "ё \`"
+     6	        "Й Q" "Ц W" "У E" "К R" "Е T" "Н Y" "Г U" "Ш I" "Щ O" "З P" "Х {" "Ъ }"
+     7	        "Ф A" "Ы S" "В D" "А F" "П G" "Р H" "О J" "Л K" "Д L" "Ж :" "Э \""
+     8	        "Я Z" "Ч X" "С C" "М V" "И B" "Т N" "Ь M" "Б <" "Ю >" "Ё ~"
+     9	    )
+    10	    
+    11	    local result="$BUFFER"
+    12	    local in_quotes=0
+    13	    local quote_char=""
+    14	    local output=""
+    15	    
+    16	    # Проходим по каждому символу в строке
+    17	    for (( i=0; i<${#result}; i++ )); do
+    18	        local char="${result:$i:1}"
+    19	        
+    20	        # Проверяем кавычки
+    21	        if [[ "$char" == "\"" || "$char" == "'" ]]; then
+    22	            if [[ $in_quotes -eq 0 ]]; then
+    23	                # Начало кавычек
+    24	                in_quotes=1
+    25	                quote_char="$char"
+    26	            elif [[ "$char" == "$quote_char" ]]; then
+    27	                # Конец кавычек (только если совпадает тип кавычек)
+    28	                in_quotes=0
+    29	                quote_char=""
+    30	            fi
+    31	        fi
+    32	        
+    33	        if [[ $in_quotes -eq 0 ]]; then
+    34	            # Вне кавычек - преобразуем
+    35	            local converted=0
+    36	            for pair in "${mapping[@]}"; do
+    37	                local ru="${pair%% *}"
+    38	                local en="${pair##* }"
+    39	                if [[ "$char" == "$ru" ]]; then
+    40	                    output+="$en"
+    41	                    converted=1
+    42	                    break
+    43	                fi
+    44	            done
+    45	            
+    46	            if [[ $converted -eq 0 ]]; then
+    47	                output+="$char"
+    48	            fi
+    49	        else
+    50	            # Внутри кавычек - оставляем как есть
+    51	            output+="$char"
+    52	        fi
+    53	    done
+    54	    
+    55	    BUFFER="$output"
+    56	    CURSOR=${#BUFFER}
+    57	}
+    58	
+    59	# Привязываем к нажатию Enter
+    60	function accept-line-with-translit() {
+    61	    transliterate-command-line
+    62	    zle .accept-line
+    63	}
+    64	
+    65	zle -N accept-line-with-translit
+    66	bindkey '^M' accept-line-with-translit
+    67	bindkey '^J' accept-line-with-translit--- Конец ---
+
+### Файл 19: ./save.sh ###
+--- Содержимое (      17 строк) ---
+     1	
+     2	
+     3	if [ -z "$1" ]; then
+     4	        echo "Ошибка: Укажите название коммита."
+     5	        return 1
+     6	    fi
+     7	
+     8	    commit_message="$*"
+     9	
+    10	    git checkout -b develop 2>/dev/null || git checkout develop
+    11	
+    12	    git add *.c 
+    13	git add *.h
+    14	    git commit -m "$commit_message"
+    15	
+    16	    git push --set-upstream origin develop
+    17	
+--- Конец ---
+
+### Файл 20: ./setup.sh ###
+--- Содержимое (      16 строк) ---
+     1	#!/bin/bash
+     2	SCRIPT_DIR="$HOME/leerov-tools"
+     3	curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+     4	
+     5	if [ ! -f "$HOME/.zshrc" ]; then
+     6	    touch "$HOME/.zshrc"
+     7	fi
+     8	if ! grep -q "source $SCRIPT_DIR/zshrc" "$HOME/.zshrc"; then
+     9	    echo "source $SCRIPT_DIR/zshrc" >> "$HOME/.zshrc"
+    10	fi
+    11	
+    12	if [ ! -f "$HOME/.vimrc.vim" ]; then
+    13	    touch "$HOME/.vimrc.vim"
+    14	fi
+    15	if ! grep -q "source $SCRIPT_DIR/vimrc.vim" "$HOME/.vimrc.vim"; then
+    16	    echo "source $SCRIPT_DIR/vimrc.vim" >> "$HOME/.vimrc.vim"
+    17	fi--- Конец ---
+
+### Файл 21: ./show.sh ###
+--- Содержимое (     121 строк) ---
+     1	#!/bin/bash
+     2	
+     3	# Функция с поддержкой исключения файлов
+     4	show() {
+     5	    local search_dir="."
+     6	    local include_patterns=()
+     7	    local exclude_patterns=()
+     8	    local recursive=false
+     9	    
+    10	    # Парсинг аргументов
+    11	    while [[ $# -gt 0 ]]; do
+    12	        case "$1" in
+    13	            -d|--dir|--directory)
+    14	                search_dir="${2:-.}"
+    15	                shift 2
+    16	                ;;
+    17	            -r|--recursive)
+    18	                recursive=true
+    19	                shift
+    20	                ;;
+    21	            -x|--exclude)
+    22	                if [[ -n "$2" ]]; then
+    23	                    exclude_patterns+=("$2")
+    24	                    shift 2
+    25	                else
+    26	                    echo "Ошибка: Не указана маска для исключения" >&2
+    27	                    return 1
+    28	                fi
+    29	                ;;
+    30	            -h|--help)
+    31	                cat << EOF
+    32	show - показывает содержимое файлов
+    33	
+    34	Использование: show [ОПЦИИ] [МАСКИ...]
+    35	
+    36	Опции:
+    37	  -d, --dir ДИРЕКТОРИЯ  Поиск в указанной директории (по умолчанию: .)
+    38	  -r, --recursive       Рекурсивный поиск
+    39	  -x, --exclude МАСКА   Исключить файлы по маске (можно несколько раз)
+    40	  -h, --help            Показать справку
+    41	
+    42	Маски:
+    43	  Можно указать несколько масок для включения:
+    44	    show *.txt *.sh              # Только .txt и .sh файлы
+    45	    show -x "*.bak" "*.tmp"      # Все файлы кроме .bak и .tmp
+    46	    show "*.py" -x "test_*.py"   # .py файлы кроме начинающихся на test_
+    47	
+    48	Примеры:
+    49	  show                              # Все файлы в текущей папке
+    50	  show -d ~/docs *.pdf *.doc       # PDF и DOC в ~/docs
+    51	  show -r "*.conf" -x "*.old"      # Рекурсивно .conf файлы кроме .old
+    52	  show *.sh *.bash -x "*test*"     # .sh и .bash файлы кроме содержащих test
+    53	EOF
+    54	                return 0
+    55	                ;;
+    56	            -*)
+    57	                echo "Неизвестная опция: $1" >&2
+    58	                return 1
+    59	                ;;
+    60	            *)
+    61	                include_patterns+=("$1")
+    62	                shift
+    63	                ;;
+    64	        esac
+    65	    done
+    66	    
+    67	    # Если нет масок для включения, берем все
+    68	    [[ ${#include_patterns[@]} -eq 0 ]] && include_patterns=("*")
+    69	    
+    70	    local counter=1
+    71	    echo "=== Показываю файлы ==="
+    72	    echo "Директория: $(realpath "$search_dir")"
+    73	    echo "Включая: ${include_patterns[*]}"
+    74	    [[ ${#exclude_patterns[@]} -gt 0 ]] && echo "Исключая: ${exclude_patterns[*]}"
+    75	    [[ $recursive == true ]] && echo "Режим: рекурсивный"
+    76	    echo ""
+    77	    
+    78	    # Строим команду find
+    79	    local find_cmd="find \"$search_dir\""
+    80	    [[ $recursive != true ]] && find_cmd+=" -maxdepth 1"
+    81	    find_cmd+=" -type f"
+    82	    
+    83	    # Добавляем условия для включения
+    84	    find_cmd+=" \( "
+    85	    for ((i=0; i<${#include_patterns[@]}; i++)); do
+    86	        [[ $i -gt 0 ]] && find_cmd+=" -o"
+    87	        find_cmd+=" -name \"${include_patterns[$i]}\""
+    88	    done
+    89	    find_cmd+=" \)"
+    90	    
+    91	    # Добавляем условия для исключения
+    92	    for pattern in "${exclude_patterns[@]}"; do
+    93	        find_cmd+=" ! -name \"$pattern\""
+    94	    done
+    95	    
+    96	    # Обработка файлов
+    97	    while IFS= read -r -d '' file; do
+    98	        echo "### Файл $counter: $file ###"
+    99	        
+   100	        if [[ -r "$file" ]]; then
+   101	            if file "$file" | grep -q "text"; then
+   102	                echo "--- Содержимое ($(wc -l < "$file") строк) ---"
+   103	                cat -n "$file"
+   104	                echo "--- Конец ---"
+   105	            else
+   106	                echo "[Бинарный файл]"
+   107	                echo "Тип: $(file -b "$file")"
+   108	                echo "Размер: $(du -h "$file" | cut -f1)"
+   109	            fi
+   110	        else
+   111	            echo "[Нет доступа]"
+   112	        fi
+   113	        
+   114	        echo ""
+   115	        ((counter++))
+   116	        
+   117	    done < <(eval "$find_cmd -print0 2>/dev/null | sort -z")
+   118	    
+   119	    [[ $((counter-1)) -eq 0 ]] && echo "Файлы не найдены"
+   120	    echo "=== Всего: $((counter-1)) файлов ==="
+   121	}
+--- Конец ---
+
+### Файл 22: ./uninstall.sh ###
+--- Содержимое (      20 строк) ---
+     1	#!/bin/bash
+     2	if grep -q "source ~/leerov-tools/zshrc" ~/.zshrc; then
+     3	    sed -i '/source ~\/leerov-tools\/zshrc/d' ~/.zshrc
+     4	fi
+     5	if grep -q "source ~/leerov-tools/vimrc.vim" ~/.vimrc.vim; then
+     6	    sed -i '/source ~\/leerov-tools\/vimrc.vim/d' ~/.vimrc.vim
+     7	fi
+     8	if [ -d ~/leerov-tools ]; then
+     9	    rm -rf ~/leerov-tools
+    10	    echo "Папка ~/leerov-tools удалена."
+    11	else
+    12	    echo "Папка ~/leerov-tools не существует."
+    13	fi
+    14	if [ -f ~/.vim/autoload/plug.vim ]; then
+    15	    rm -f ~/.vim/autoload/plug.vim
+    16	    echo "Файл ~/.vim/autoload/plug.vim удален."
+    17	else
+    18	    echo "Файл ~/.vim/autoload/plug.vim не существует."
+    19	fi
+    20	echo "Все изменения отменены."
+--- Конец ---
+
+### Файл 23: ./vimrc.vim ###
+--- Содержимое (      19 строк) ---
+     1	set nu
+     2	set rnu
+     3	syntax on
+     4	set noswapfile
+     5	set tabstop=4
+     6	set mouse=a
+     7	
+     8	call plug#begin() 
+     9	    Plug 'preservim/nerdtree'
+    10		Plug 'jiangmiao/auto-pairs'
+    11	call plug#end() 
+    12	
+    13	let g:AutoPairs = {'(':')', '[':']', '{':'}', "'":"'", '"':'"', '`':'`'}
+    14	let g:AutoPairsMapSpace = 1
+    15	
+    16	nnoremap <silent> \ :NERDTreeToggle<CR> 
+    17	nnoremap <silent> ` :shell<CR>
+    18	nnoremap <F5> runc % <CR>
+    19	nnoremap <F6> form <CR>
+--- Конец ---
+
+=== Всего: 23 файлов ===
