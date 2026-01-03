@@ -3,9 +3,12 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 plugins=(... globalias)
 cd "$SCRIPT_DIR"
+
+# Включение файлов с расширениями
 source env.sh
 source pushRepo.sh
 source poolReview.sh
+source show.sh
 
 # Определяем ОС
 OS_TYPE=$(uname)
