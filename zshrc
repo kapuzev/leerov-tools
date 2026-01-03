@@ -61,12 +61,15 @@ qr() {
 
 # Добавление всех путей из файла .paths
 if [ -f "$SCRIPT_DIR/paths.txt" ]; then
-    # Читаем все строки в массив, игнорируя комментарии и пустые строки
-    mapfile -t directories < <(grep -v '^[[:space:]]*#' "$SCRIPT_DIR/paths.txt" | grep -v '^[[:space:]]*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-    
-    for dir in "${directories[@]}"; do
+    while IFS= read -r dir || [ -n "$dir" ]; do
+        # Пропускаем комментарии и пустые строки
+        dir="${dir%%#*}"  # Убираем комментарии после #
+        dir="$(echo "$dir" | xargs)"  # Обрезаем пробелы по краям
+        
+        [ -z "$dir" ] && continue  # Пропускаем если пусто
+        
         export PATH="$dir:$PATH"
-    done
+    done < "$SCRIPT_DIR/paths.txt"
 fi
 
 # Автозагрузка при входе 
