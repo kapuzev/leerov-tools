@@ -75,47 +75,63 @@ EOF
     [[ $recursive == true ]] && echo "Режим: рекурсивный"
     echo ""
     
-    # Строим команду find
-    local find_cmd="find \"$search_dir\""
-    [[ $recursive != true ]] && find_cmd+=" -maxdepth 1"
-    find_cmd+=" -type f"
-    
-    # Добавляем условия для включения
-    find_cmd+=" \( "
-    for ((i=0; i<${#include_patterns[@]}; i++)); do
-        [[ $i -gt 0 ]] && find_cmd+=" -o"
-        find_cmd+=" -name \"${include_patterns[$i]}\""
-    done
-    find_cmd+=" \)"
-    
-    # Добавляем условия для исключения
-    for pattern in "${exclude_patterns[@]}"; do
-        find_cmd+=" ! -name \"$pattern\""
-    done
-    
     # Обработка файлов
-    while IFS= read -r -d '' file; do
-        echo "### Файл $counter: $file ###"
-        
-        if [[ -r "$file" ]]; then
-            if file "$file" | grep -q "text"; then
-                echo "--- Содержимое ($(wc -l < "$file") строк) ---"
-                cat -n "$file"
-                echo "--- Конец ---"
-            else
-                echo "[Бинарный файл]"
-                echo "Тип: $(file -b "$file")"
-                echo "Размер: $(du -h "$file" | cut -f1)"
-            fi
-        else
-            echo "[Нет доступа]"
-        fi
-        
-        echo ""
-        ((counter++))
-        
-    done < <(eval "$find_cmd -print0 2>/dev/null | sort -z")
+    local files_found=0
+    local first_file=true
     
-    [[ $((counter-1)) -eq 0 ]] && echo "Файлы не найдены"
-    echo "=== Всего: $((counter-1)) файлов ==="
+    # Используем find для поиска файлов с учетом паттернов
+    for pattern in "${include_patterns[@]}"; do
+        while IFS= read -r -d '' file; do
+            # Проверка на исключение
+            local exclude=false
+            for exclude_pattern in "${exclude_patterns[@]}"; do
+                if [[ "$(basename "$file")" == $exclude_pattern ]]; then
+                    exclude=true
+                    break
+                fi
+            done
+            
+            if [[ $exclude == true ]]; then
+                continue
+            fi
+            
+            if [[ $first_file == true ]]; then
+                first_file=false
+            else
+                echo ""
+            fi
+            
+            echo "### Файл $counter: $file ###"
+            
+            if [[ -r "$file" ]]; then
+                if file "$file" | grep -q "text"; then
+                    echo "--- Содержимое ($(wc -l < "$file") строк) ---"
+                    cat -n "$file"
+                    echo "--- Конец ---"
+                else
+                    echo "[Бинарный файл]"
+                    echo "Тип: $(file -b "$file")"
+                    echo "Размер: $(du -h "$file" | cut -f1)"
+                fi
+            else
+                echo "[Нет доступа]"
+            fi
+            
+            ((counter++))
+            ((files_found++))
+            
+        done < <(
+            # Генерируем команду find с учетом рекурсивности
+            if [[ $recursive == true ]]; then
+                find "$search_dir" -type f -name "$pattern" -print0 2>/dev/null
+            else
+                find "$search_dir" -maxdepth 1 -type f -name "$pattern" -print0 2>/dev/null
+            fi
+        )
+    done
+    
+    if [[ $files_found -eq 0 ]]; then
+        echo "Файлы не найдены"
+    fi
+    echo "=== Всего: $files_found файлов ==="
 }
