@@ -31,7 +31,7 @@ show() {
                 cat << EOF
 show - показывает содержимое файлов
 
-Использование: show [ОПЦИИ] [МАСКИ...]
+Использование: show [ОПЦИИ] [МАСКИ/ПУТИ...]
 
 Опции:
   -d, --dir ДИРЕКТОРИЯ  Поиск в указанной директории (по умолчанию: .)
@@ -40,10 +40,11 @@ show - показывает содержимое файлов
   -h, --help            Показать справку
 
 Маски:
-  Можно указать несколько масок для включения:
+  Можно указать несколько масок или путей:
     show *.txt *.sh              # Только .txt и .sh файлы
+    show "**/*.sql"              # Все .sql файлы рекурсивно
+    show "*/src/*/*.sql"         # .sql файлы в поддиректориях src
     show -x "*.bak" "*.tmp"      # Все файлы кроме .bak и .tmp
-    show "*.py" -x "test_*.py"   # .py файлы кроме начинающихся на test_
 
 Примеры:
   show                              # Все файлы в текущей папке
@@ -58,7 +59,13 @@ EOF
                 return 1
                 ;;
             *)
-                include_patterns+=("$1")
+                # Проверяем, является ли аргумент существующим файлом
+                if [[ -f "$1" ]]; then
+                    include_patterns+=("$(basename "$1")")
+                    search_dir="$(dirname "$1")"
+                else
+                    include_patterns+=("$1")
+                fi
                 shift
                 ;;
         esac
@@ -79,59 +86,81 @@ EOF
     local files_found=0
     local first_file=true
     
-    # Используем find для поиска файлов с учетом паттернов
+    # Определяем, нужно ли использовать рекурсивный поиск
+    local find_opts=""
+    [[ $recursive != true ]] && find_opts="-maxdepth 1"
+    
     for pattern in "${include_patterns[@]}"; do
-        while IFS= read -r -d '' file; do
-            # Проверка на исключение
-            local exclude=false
-            for exclude_pattern in "${exclude_patterns[@]}"; do
-                if [[ "$(basename "$file")" == $exclude_pattern ]]; then
-                    exclude=true
-                    break
-                fi
-            done
+        # Проверяем, содержит ли паттерн путь
+        if [[ "$pattern" == */* ]]; then
+            # Паттерн с путем - разделяем на директорию и маску
+            local dir_part="${pattern%/*}"
+            local mask_part="${pattern##*/}"
             
-            if [[ $exclude == true ]]; then
-                continue
-            fi
-            
-            if [[ $first_file == true ]]; then
-                first_file=false
+            if [[ "$dir_part" == "**" ]]; then
+                # Специальный случай: рекурсивный поиск с **
+                while IFS= read -r -d '' file; do
+                    process_file "$file"
+                done < <(find "$search_dir" -type f -name "$mask_part" -print0 2>/dev/null | sort -z)
             else
-                echo ""
+                # Поиск в определенной директории с маской
+                local search_path="$search_dir/$dir_part"
+                while IFS= read -r -d '' file; do
+                    process_file "$file"
+                done < <(find "$search_path" $find_opts -type f -name "$mask_part" -print0 2>/dev/null | sort -z)
             fi
-            
-            echo "### Файл $counter: $file ###"
-            
-            if [[ -r "$file" ]]; then
-                if file "$file" | grep -q "text"; then
-                    echo "--- Содержимое ($(wc -l < "$file") строк) ---"
-                    cat -n "$file"
-                    echo "--- Конец ---"
-                else
-                    echo "[Бинарный файл]"
-                    echo "Тип: $(file -b "$file")"
-                    echo "Размер: $(du -h "$file" | cut -f1)"
-                fi
-            else
-                echo "[Нет доступа]"
-            fi
-            
-            ((counter++))
-            ((files_found++))
-            
-        done < <(
-            # Генерируем команду find с учетом рекурсивности
-            if [[ $recursive == true ]]; then
-                find "$search_dir" -type f -name "$pattern" -print0 2>/dev/null
-            else
-                find "$search_dir" -maxdepth 1 -type f -name "$pattern" -print0 2>/dev/null
-            fi
-        )
+        else
+            # Простой паттерн без пути
+            while IFS= read -r -d '' file; do
+                process_file "$file"
+            done < <(find "$search_dir" $find_opts -type f -name "$pattern" -print0 2>/dev/null | sort -z)
+        fi
     done
     
     if [[ $files_found -eq 0 ]]; then
         echo "Файлы не найдены"
     fi
     echo "=== Всего: $files_found файлов ==="
+}
+
+# Вспомогательная функция для обработки одного файла
+process_file() {
+    local file="$1"
+    
+    # Проверка на исключение
+    local exclude=false
+    local filename="$(basename "$file")"
+    for exclude_pattern in "${exclude_patterns[@]}"; do
+        if [[ "$filename" == $exclude_pattern ]]; then
+            exclude=true
+            break
+        fi
+    done
+    
+    [[ $exclude == true ]] && return
+    
+    if [[ $first_file == true ]]; then
+        first_file=false
+    else
+        echo ""
+    fi
+    
+    echo "### Файл $counter: $file ###"
+    
+    if [[ -r "$file" ]]; then
+        if file "$file" | grep -q "text"; then
+            echo "--- Содержимое ($(wc -l < "$file") строк) ---"
+            cat -n "$file"
+            echo "--- Конец ---"
+        else
+            echo "[Бинарный файл]"
+            echo "Тип: $(file -b "$file")"
+            echo "Размер: $(du -h "$file" | cut -f1)"
+        fi
+    else
+        echo "[Нет доступа]"
+    fi
+    
+    ((counter++))
+    ((files_found++))
 }
