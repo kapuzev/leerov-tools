@@ -9,3 +9,4 @@ node_modules/*/bin/
 # /usr/local/bin
 # /opt/homebrew/bin
 # $HOME/.local/bin
+$HOME/Library/Python/3.12/bin
