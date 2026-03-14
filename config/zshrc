@@ -108,9 +108,9 @@ install_package() {
     install_app "$@"
 }
 
-# Функции для запуска Python сервера и клиента
+# Функции для запуска PTY сервера и клиента
 server() {
-    local port="${1:-5000}"  # Порт по умолчанию 5000
+    local port="${1:-8080}"
     local script_path="$SCRIPT_DIR/scripts/server.py"
     
     if [ ! -f "$script_path" ]; then
@@ -118,16 +118,16 @@ server() {
         return 1
     fi
     
-    echo "🚀 Запуск сервера на порту $port..."
+    echo "🚀 Запуск PTY сервера на порту $port..."
     echo "📝 Для остановки нажмите Ctrl+C"
     echo ""
     
-    python3 "$script_path" --port "$port"
+    python3 "$script_path" "$port"
 }
 
 client() {
     local server_ip="${1:-localhost}"
-    local port="${2:-5000}"
+    local port="${2:-8080}"
     local script_path="$SCRIPT_DIR/scripts/client.py"
     
     if [ ! -f "$script_path" ]; then
@@ -135,49 +135,10 @@ client() {
         return 1
     fi
     
-    echo "🔌 Подключение к серверу $server_ip:$port..."
-    echo "📝 Для выхода введите 'exit' или нажмите Ctrl+C"
+    echo "🔌 Подключение к PTY серверу $server_ip:$port..."
     echo ""
     
-    python3 "$script_path" --host "$server_ip" --port "$port"
-}
-
-# Альтернативная версия с автоматическим поиском IP (для macOS)
-server_local() {
-    local port="${1:-5000}"
-    local ip=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "localhost")
-    
-    echo "🌐 Ваш локальный IP: $ip"
-    echo "💡 Клиент может подключиться: client $ip $port"
-    echo ""
-    
-    server "$port"
-}
-
-# Функция для быстрой проверки доступности сервера
-ping_server() {
-    local server_ip="${1:-localhost}"
-    local port="${2:-5000}"
-    
-    echo "🔄 Проверка доступности сервера $server_ip:$port..."
-    
-    if nc -z -G 2 "$server_ip" "$port" 2>/dev/null; then
-        echo "✅ Сервер доступен"
-        return 0
-    else
-        echo "❌ Сервер недоступен"
-        return 1
-    fi
-}
-
-# Автодополнение для функций (опционально)
-compdef _server_completion server
-compdef _server_completion client
-
-_server_completion() {
-    _arguments -C \
-        '1: :(localhost 192.168. 10.0. 172.16.)' \
-        '2: :(5000 8000 8080 3000)'
+    python3 "$script_path"
 }
 
 # Добавление всех путей из файла paths.txt
