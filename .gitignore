@@ -1,7 +1,32 @@
-.DS*
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Compiled files
 *.out
+*.o
+*.a
+*.so
+*.dylib
+*.exe
 
-**/__pycache__*/
-*.pyc
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-settings.json
+# Dependencies
+node_modules/

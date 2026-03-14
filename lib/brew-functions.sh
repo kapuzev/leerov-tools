@@ -1,4 +1,5 @@
 #!/bin/bash
+# lib/brew-functions.sh - Функции для управления Homebrew
 
 # Функция активации Homebrew
 function brewActivate {
@@ -43,12 +44,12 @@ function brewActivate {
         return 0
     else
         echo "❌ Homebrew не найден по пути: $brew_path"
-        echo "💡 Используйте команду: brewSetup"
+        echo "💡 Используйте команду: brew-setup"
         return 1
     fi
 }
 
-# Функция установки Homebrew (аналог else части вашей brsw)
+# Функция установки Homebrew
 function brewInstall {
     if [ -d /opt/goinfre/$(whoami)/homebrew ]; then
         echo "Homebrew уже установлен"
@@ -77,7 +78,7 @@ function brewUninstall {
     fi
 }
 
-# Основная функция (полный аналог вашей brsw)
+# Основная функция установки/активации
 function brewSetup {
     local brew_path="/opt/goinfre/$(whoami)/homebrew"
     
@@ -108,15 +109,14 @@ function brewSetup {
     fi
 }
 
-# Функция переустановки (удалить + установить)
+# Функция переустановки
 function brewReinstall {
     brewUninstall
     brewInstall
 }
 
+# Добавляем brew в PATH если он есть
 brew_path="/opt/goinfre/$(whoami)/homebrew/bin"
 if [[ ":$PATH:" != *":$brew_path:"* ]] && [ -d "$brew_path" ]; then
     export PATH="$brew_path:$PATH"
 fi
-
-source "installAppOnProfile.sh"

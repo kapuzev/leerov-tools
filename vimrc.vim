@@ -1,19 +1,20 @@
-set nu
-set rnu
-syntax on
-set noswapfile
-set tabstop=4
-set mouse=a
+#!/bin/bash
 
-call plug#begin() 
-    Plug 'preservim/nerdtree'
-	Plug 'jiangmiao/auto-pairs'
-call plug#end() 
+# Скрипт для обновления пути в .vimrc с leerov-tools/vimrc.vim на leerov-tools/config/vimrc.vim
 
-let g:AutoPairs = {'(':')', '[':']', '{':'}', "'":"'", '"':'"', '`':'`'}
-let g:AutoPairsMapSpace = 1
+SCRIPT_DIR="$HOME/leerov-tools"
+VIMRC="$HOME/.vimrc"
 
-nnoremap <silent> \ :NERDTreeToggle<CR> 
-nnoremap <silent> ` :shell<CR>
-nnoremap <F5> runc % <CR>
-nnoremap <F6> form <CR>
+# Проверяем существует ли .vimrc
+[ ! -f "$VIMRC" ] && exit 0
+
+# Удаляем старую ссылку если она есть
+if grep -q "source $SCRIPT_DIR/vimrc.vim" "$VIMRC"; then
+    grep -v "source $SCRIPT_DIR/vimrc.vim" "$VIMRC" > "$VIMRC.tmp"
+    mv "$VIMRC.tmp" "$VIMRC"
+fi
+
+# Добавляем новую ссылку если её ещё нет
+if ! grep -q "source $SCRIPT_DIR/config/vimrc.vim" "$VIMRC"; then
+    echo "source $SCRIPT_DIR/config/vimrc.vim" >> "$VIMRC"
+fi

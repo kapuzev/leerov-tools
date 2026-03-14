@@ -1,0 +1,121 @@
+#!/bin/bash
+CURRENT_DIR=$(pwd)
+SCRIPT_DIR="$HOME/leerov-tools"
+cd "$SCRIPT_DIR" || return
+nohup git pull > /dev/null 2>&1 &
+nohup git pull > /dev/null 2>&1 &
+# Определяем ОС
+OS_TYPE=$(uname)
+
+# Подключаем библиотечные функции
+for lib in "$SCRIPT_DIR/lib"/*.sh; do
+    [ -f "$lib" ] && source "$lib"
+done
+
+# Подключаем основные скрипты
+source "$SCRIPT_DIR/bin/push-repo.sh"
+source "$SCRIPT_DIR/bin/pool-review.sh"
+source "$SCRIPT_DIR/bin/show.sh"
+source "$SCRIPT_DIR/bin/ru2en.sh"
+
+# Создаем папку с правами 755 (для 42 School)
+if [ -d "/opt/goinfre" ]; then
+    mkdir -p "/opt/goinfre/$(whoami)"
+    chmod -R 755 "/opt/goinfre/$(whoami)" 2>/dev/null
+fi
+
+# Алиасы для основных команд
+alias la="ls -la"
+alias p="bash $SCRIPT_DIR/bin/peer-review.sh"
+alias f="bash $SCRIPT_DIR/scripts/clang-format-check.sh"
+alias c="bash $SCRIPT_DIR/bin/clean.sh"
+alias r="source ~/.zshrc"
+alias s="bash $SCRIPT_DIR/bin/save.sh"
+alias py="python3"
+alias python="python3"
+alias pip="pip3"
+
+# Полезные алиасы
+alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
+alias settings="bash -c \"cd leerov-tools/settings; open 'LT Settings.app'\""
+
+# Git алиасы
+alias gs="git status"
+alias ga="git add"
+alias gc="git commit -m"
+alias gp="git push"
+alias gl="git log --oneline --graph --all"
+
+if [ -d "$HOME/Desktop/VSCodium.app" ]; then
+    export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
+    alias codium="codium"
+    alias code="codium"  # Алиас для привычной команды
+fi
+
+# Функции (определяем ДО алиасов с такими же именами)
+
+# Функция для push (обёртка над git_push_ssh_only)
+push() {
+    git_push_ssh_only "$@"
+}
+push
+
+# Функция для QR-кодов
+qr() {
+    if [ $# -eq 0 ]; then
+        # Если нет аргументов, читаем из stdin
+        if [ -t 0 ]; then
+            echo "Использование: qr <текст>"
+            return 1
+        else
+            local text=$(cat)
+            echo "$text" | curl -s -F-=\<- qrenco.de
+        fi
+    else
+        # Если есть аргументы, используем их
+        local text="$*"
+        echo "$text" | curl -s -F-=\<- qrenco.de
+    fi
+}
+
+# Функция для быстрой установки пакетов (НЕ алиас!)
+install_package() {
+    install_app "$@"
+}
+
+# Добавление всех путей из файла paths.txt
+if [ -f "$SCRIPT_DIR/config/paths.txt" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Убираем комментарии после #
+        dir="${line%%#*}"
+        # Обрезаем пробелы по краям
+        dir="$(echo "$dir" | xargs)"
+        
+        # Пропускаем пустые строки
+        [ -z "$dir" ] && continue
+        
+        # Добавляем путь если директория существует
+        if [ -d "$dir" ]; then
+            export PATH="$dir:$PATH"
+        fi
+    done < "$SCRIPT_DIR/config/paths.txt"
+fi
+
+# Загружаем ОС-специфичные конфиги
+if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
+    source "$SCRIPT_DIR/config/macrc"
+elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
+    source "$SCRIPT_DIR/config/linuxrc"
+fi
+
+# Информация о Goinfre (для 42 School)
+if [ -d "/opt/goinfre/$(whoami)" ]; then
+    echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
+    echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
+    echo ""
+fi
+
+
+
+# Возвращаемся в исходную директорию
+cd "$CURRENT_DIR" || return
