@@ -120,7 +120,7 @@ fi
     sleep 2
     # Переходим в директорию и пулим
     cd "$SCRIPT_DIR" && git pull
-) & disown
+) & disown  >/dev/null 2>&1
 
 # Фоновая отправка изменений (если есть)
 (
@@ -135,7 +135,7 @@ fi
             git push 2>/dev/null
         fi
     }
-) & disown
+) & disown  >/dev/null 2>&1
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
