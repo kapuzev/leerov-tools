@@ -2,7 +2,6 @@
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR" || return
-nohup git pull > /dev/null 2>&1 &
 # Определяем ОС
 OS_TYPE=$(uname)
 
@@ -57,7 +56,6 @@ fi
 push() {
     git_push_ssh_only "$@"
 }
-push > /dev/null 2>&1 &
 
 # Функция для QR-кодов
 qr() {
@@ -114,7 +112,30 @@ if [ -d "/opt/goinfre/$(whoami)" ]; then
     echo ""
 fi
 
+# Фоновая синхронизация репозитория (без вывода)
+(
+    # Перенаправляем весь вывод в /dev/null
+    exec >/dev/null 2>&1
+    # Ждем немного, чтобы не мешать загрузке shell
+    sleep 2
+    # Переходим в директорию и пулим
+    cd "$SCRIPT_DIR" && git pull
+) & disown
 
+# Фоновая отправка изменений (если есть)
+(
+    exec >/dev/null 2>&1
+    sleep 3
+    # Проверяем есть ли изменения
+    cd "$SCRIPT_DIR" 2>/dev/null && {
+        if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+            # Если есть изменения, пушим их (с сообщением по умолчанию)
+            git add . 2>/dev/null
+            git commit -m "Auto-sync $(date +'%Y-%m-%d %H:%M:%S')" 2>/dev/null
+            git push 2>/dev/null
+        fi
+    }
+) & disown
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
