@@ -30,6 +30,11 @@ cd "$SCRIPT_DIR" || return
     }
 ) & disown  >/dev/null 2>&1
 
+if [ -d "$HOME/Desktop/VSCodium.app" ]; then
+    export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
+    alias codium="codium"
+fi
+
 # Определяем ОС
 OS_TYPE=$(uname)
 
@@ -72,11 +77,7 @@ alias gc="git commit -m"
 alias gp="git push"
 alias gl="git log --oneline --graph --all"
 
-if [ -d "$HOME/Desktop/VSCodium.app" ]; then
-    export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
-    alias codium="codium"
-    alias code="codium"  # Алиас для привычной команды
-fi
+
 
 # Функции (определяем ДО алиасов с такими же именами)
 
