@@ -142,13 +142,15 @@ client() {
     python3 "$script_path"
 }
 
-# Добавление всех путей из файла paths.txt
-if [ -f "$SCRIPT_DIR/config/paths.txt" ]; then
+# Добавление всех путей из файла ~/.paths
+PATHS_FILE="$HOME/.paths"
+
+if [ -f "$PATHS_FILE" ]; then
     while IFS= read -r line || [ -n "$line" ]; do
         # Убираем комментарии после #
         dir="${line%%#*}"
-        # Обрезаем пробелы по краям
-        dir="$(echo "$dir" | xargs)"
+        # Обрезаем пробелы по краям и раскрываем переменные
+        dir="$(eval echo "$dir" | xargs)"
         
         # Пропускаем пустые строки
         [ -z "$dir" ] && continue
@@ -157,7 +159,7 @@ if [ -f "$SCRIPT_DIR/config/paths.txt" ]; then
         if [ -d "$dir" ]; then
             export PATH="$dir:$PATH"
         fi
-    done < "$SCRIPT_DIR/config/paths.txt"
+    done < "$PATHS_FILE"
 fi
 
 # Загружаем ОС-специфичные конфиги
