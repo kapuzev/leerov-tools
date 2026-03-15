@@ -25,6 +25,15 @@ if [ -f "$PATHS_FILE" ]; then
     done < "$PATHS_FILE"
 fi
 
+# Загружаем ОС-специфичные конфиги
+if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
+    source "$SCRIPT_DIR/config/macrc"
+elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
+    source "$SCRIPT_DIR/config/linuxrc"
+fi
+
+
+
 fastfetch
 
 # Информация о Goinfre (для 42 School)
@@ -170,14 +179,6 @@ client() {
     
     python3 "$script_path"
 }
-
-# Загружаем ОС-специфичные конфиги
-if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
-    source "$SCRIPT_DIR/config/macrc"
-elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
-    source "$SCRIPT_DIR/config/linuxrc"
-fi
-
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
