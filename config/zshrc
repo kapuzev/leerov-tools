@@ -3,6 +3,7 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR" || return
 
+set +m
 
 # Фоновая синхронизация репозитория (без вывода)
 (
