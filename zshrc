@@ -24,4 +24,6 @@ if ! grep -q "export PATH=\"\$HOME/leerov-tools/bin:\$PATH\"" "$ZSHRC"; then
     echo 'export PATH="$HOME/leerov-tools/bin:$PATH"' >> "$ZSHRC"
 fi
 
+/Users/$(whoami)/go/bin
+
 source $SCRIPT_DIR/vimrc.vim
