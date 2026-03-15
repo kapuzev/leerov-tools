@@ -1,12 +1,2 @@
-# ~/.paths - файл только с путями
-/Applications/Postgres.app/Contents/Versions/latest/bin
 /Applications/Visual Studio Code.app/Contents/Resources/app/bin
-node_modules/*/bin/
-/Users/$(whoami)/goinfre/node_modules/.bin
-/Users/$(whoami)/opt/goinfre/Android/sdk/bin
-
-# Дополнительные пути (примеры)
-# /usr/local/bin
-# /opt/homebrew/bin
-# $HOME/.local/bin
-$HOME/Library/Python/3.12/bin
+/Users/$(whoami)/Library/Python/3.12/bin
