@@ -5,6 +5,26 @@ CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR" || return
 
+# Добавление всех путей из файла ~/.paths
+PATHS_FILE="$SCRIPT_DIR/config/paths.txt"
+
+if [ -f "$PATHS_FILE" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Убираем комментарии после #
+        dir="${line%%#*}"
+        # Обрезаем пробелы по краям и раскрываем переменные
+        dir="$(eval echo "$dir" | xargs)"
+        
+        # Пропускаем пустые строки
+        [ -z "$dir" ] && continue
+        
+        # Добавляем путь если директория существует
+        if [ -d "$dir" ]; then
+            export PATH="$dir:$PATH"
+        fi
+    done < "$PATHS_FILE"
+fi
+
 fastfetch
 
 # Информация о Goinfre (для 42 School)
@@ -150,26 +170,6 @@ client() {
     
     python3 "$script_path"
 }
-
-# Добавление всех путей из файла ~/.paths
-PATHS_FILE="$SCRIPT_DIR/config/paths.txt"
-
-if [ -f "$PATHS_FILE" ]; then
-    while IFS= read -r line || [ -n "$line" ]; do
-        # Убираем комментарии после #
-        dir="${line%%#*}"
-        # Обрезаем пробелы по краям и раскрываем переменные
-        dir="$(eval echo "$dir" | xargs)"
-        
-        # Пропускаем пустые строки
-        [ -z "$dir" ] && continue
-        
-        # Добавляем путь если директория существует
-        if [ -d "$dir" ]; then
-            export PATH="$dir:$PATH"
-        fi
-    done < "$PATHS_FILE"
-fi
 
 # Загружаем ОС-специфичные конфиги
 if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
