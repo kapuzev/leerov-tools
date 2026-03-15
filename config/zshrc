@@ -167,7 +167,7 @@ elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
     source "$SCRIPT_DIR/config/linuxrc"
 fi
 
-{
+info (){
     fastfetch
 
     # Информация о Goinfre (для 42 School)
@@ -176,7 +176,7 @@ fi
         echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
         echo ""
     fi
-} &
+}
 
 
 
