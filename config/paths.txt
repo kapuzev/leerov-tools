@@ -1,2 +1,3 @@
 /Applications/Visual Studio Code.app/Contents/Resources/app/bin
 /Users/$(whoami)/Library/Python/3.12/bin
+$HOME/go/bin:$PATH
