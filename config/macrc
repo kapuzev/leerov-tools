@@ -1,7 +1,3 @@
-source brewSetup
-
-brewSetup
-
 # Basic Zsh configuration for macOS
 setopt autocd
 setopt interactivecomments
