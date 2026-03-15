@@ -1,7 +1,18 @@
+
+
 #!/bin/bash
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR" || return
+
+fastfetch
+
+# Информация о Goinfre (для 42 School)
+if [ -d "/opt/goinfre/$(whoami)" ]; then
+    echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
+    echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
+    echo ""
+fi
 
 set +m
 
@@ -166,19 +177,6 @@ if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
 elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
     source "$SCRIPT_DIR/config/linuxrc"
 fi
-
-info (){
-    fastfetch
-
-    # Информация о Goinfre (для 42 School)
-    if [ -d "/opt/goinfre/$(whoami)" ]; then
-        echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
-        echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
-        echo ""
-    fi
-}
-
-
 
 
 # Возвращаемся в исходную директорию
