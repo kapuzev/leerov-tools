@@ -65,5 +65,4 @@ if ! command -v fastfetch &> /dev/null; then
     command -v brew &> /dev/null || brewSetup
     brew install fastfetch
 fi
-clear
 fastfetch
