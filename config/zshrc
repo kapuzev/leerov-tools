@@ -167,12 +167,17 @@ elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
     source "$SCRIPT_DIR/config/linuxrc"
 fi
 
-# Информация о Goinfre (для 42 School)
-if [ -d "/opt/goinfre/$(whoami)" ]; then
-    echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
-    echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
-    echo ""
-fi
+{
+    fastfetch
+
+    # Информация о Goinfre (для 42 School)
+    if [ -d "/opt/goinfre/$(whoami)" ]; then
+        echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
+        echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
+        echo ""
+    fi
+} &
+
 
 
 
