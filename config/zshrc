@@ -1,51 +1,7 @@
-
-
 #!/bin/bash
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
 cd "$SCRIPT_DIR" || return
-
-# Добавление всех путей из файла ~/.paths
-PATHS_FILE="$SCRIPT_DIR/config/paths.txt"
-
-# Определяем ОС
-OS_TYPE=$(uname)
-
-
-if [ -f "$PATHS_FILE" ]; then
-    while IFS= read -r line || [ -n "$line" ]; do
-        # Убираем комментарии после #
-        dir="${line%%#*}"
-        # Обрезаем пробелы по краям и раскрываем переменные
-        dir="$(eval echo "$dir" | xargs)"
-        
-        # Пропускаем пустые строки
-        [ -z "$dir" ] && continue
-        
-        # Добавляем путь если директория существует
-        if [ -d "$dir" ]; then
-            export PATH="$dir:$PATH"
-        fi
-    done < "$PATHS_FILE"
-fi
-
-# Загружаем ОС-специфичные конфиги
-if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
-    source "$SCRIPT_DIR/config/macrc"
-elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
-    source "$SCRIPT_DIR/config/linuxrc"
-fi
-
-
-
-fastfetch
-
-# Информация о Goinfre (для 42 School)
-if [ -d "/opt/goinfre/$(whoami)" ]; then
-    echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
-    echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
-    echo ""
-fi
 
 set +m
 
@@ -76,6 +32,9 @@ if [ -d "$HOME/Desktop/VSCodium.app" ]; then
     export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
     alias codium="codium"
 fi
+
+# Определяем ОС
+OS_TYPE=$(uname)
 
 # Подключаем библиотечные функции
 for lib in "$SCRIPT_DIR/lib"/*.sh; do
@@ -180,6 +139,44 @@ client() {
     
     python3 "$script_path"
 }
+
+# Добавление всех путей из файла ~/.paths
+PATHS_FILE="$SCRIPT_DIR/config/paths.txt"
+
+if [ -f "$PATHS_FILE" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Убираем комментарии после #
+        dir="${line%%#*}"
+        # Обрезаем пробелы по краям и раскрываем переменные
+        dir="$(eval echo "$dir" | xargs)"
+        
+        # Пропускаем пустые строки
+        [ -z "$dir" ] && continue
+        
+        # Добавляем путь если директория существует
+        if [ -d "$dir" ]; then
+            export PATH="$dir:$PATH"
+        fi
+    done < "$PATHS_FILE"
+fi
+
+# Загружаем ОС-специфичные конфиги
+if [ "$OS_TYPE" = "Darwin" ] && [ -f "$SCRIPT_DIR/config/macrc" ]; then
+    source "$SCRIPT_DIR/config/macrc"
+elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
+    source "$SCRIPT_DIR/config/linuxrc"
+fi
+
+fastfetch
+
+# Информация о Goinfre (для 42 School)
+if [ -d "/opt/goinfre/$(whoami)" ]; then
+    echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
+    echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
+    echo ""
+fi
+
+
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
