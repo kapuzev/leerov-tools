@@ -8,6 +8,10 @@ cd "$SCRIPT_DIR" || return
 # Добавление всех путей из файла ~/.paths
 PATHS_FILE="$SCRIPT_DIR/config/paths.txt"
 
+# Определяем ОС
+OS_TYPE=$(uname)
+
+
 if [ -f "$PATHS_FILE" ]; then
     while IFS= read -r line || [ -n "$line" ]; do
         # Убираем комментарии после #
@@ -72,9 +76,6 @@ if [ -d "$HOME/Desktop/VSCodium.app" ]; then
     export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
     alias codium="codium"
 fi
-
-# Определяем ОС
-OS_TYPE=$(uname)
 
 # Подключаем библиотечные функции
 for lib in "$SCRIPT_DIR/lib"/*.sh; do
