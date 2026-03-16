@@ -75,7 +75,7 @@ alias gc="git commit -m"
 alias gp="git push"
 alias gl="git log --oneline --graph --all"
 
-
+alias joke='f() { (end=$((SECONDS+$1)); while [ $SECONDS -lt $end ]; do open -a "Mission Control" 2>/dev/null & sleep 0.05; done) &>/dev/null & }; f'
 
 # Функции (определяем ДО алиасов с такими же именами)
 
