@@ -50,7 +50,9 @@ source "$SCRIPT_DIR/bin/ru2en.sh"
 # Создаем папку с правами 755 (для 42 School)
 if [ -d "/opt/goinfre" ]; then
     mkdir -p "/opt/goinfre/$(whoami)"
-    chmod -R 755 "/opt/goinfre/$(whoami)" 2>/dev/null
+    chmod -R 755 "/opt/goinfre/$(whoami)/" 2>/dev/null
+    mkdir -p "/opt/goinfre/$(whoami)/private"
+    chmod -R 700 "/opt/goinfre/$(whoami)/private" 2>/dev/null
 fi
 
 # Алиасы для основных команд
