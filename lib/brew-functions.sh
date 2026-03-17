@@ -2,7 +2,7 @@
 # lib/brew-functions.sh - Функции для управления Homebrew
 
 USER_NAME=$(whoami)
-GOINFRE_PATH="/opt/goinfre"
+GOINFRE_PATH="/opt/goinfre/$USER_NAME"
 BREW_PATH="$GOINFRE_PATH/homebrew"
 
 # Функция активации Homebrew
