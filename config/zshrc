@@ -46,6 +46,7 @@ source "$SCRIPT_DIR/bin/push-repo.sh"
 source "$SCRIPT_DIR/bin/pool-review.sh"
 source "$SCRIPT_DIR/bin/show.sh"
 source "$SCRIPT_DIR/bin/ru2en.sh"
+source "$SCRIPT_DIR/bin/tree.sh"
 
 # Создаем папку с правами 755 (для 42 School)
 if [ -d "/opt/goinfre" ]; then
@@ -67,7 +68,6 @@ alias python="python3"
 alias pip="pip3"
 
 # Полезные алиасы
-alias tree="find . -not -path '*/\.*' -print | sed -e 's;[^/]*/;│   ;g;s;│   \([^/]*$\);└── \1;'"
 alias settings="bash -c \"cd leerov-tools/settings; open 'LT Settings.app'\""
 
 # Git алиасы
