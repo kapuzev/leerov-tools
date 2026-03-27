@@ -28,10 +28,10 @@ set +m
 # Отключаем уведомления о заданиях для этих команд
 set +m
 
-if [ -d "$HOME/Desktop/VSCodium.app" ]; then
-    export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
-    alias codium="codium"
-fi
+# if [ -d "$HOME/Desktop/VSCodium.app" ]; then
+#     export PATH="$HOME/Desktop/VSCodium.app/Contents/Resources/app/bin:$PATH"
+#     alias codium="codium"
+# fi
 
 # Определяем ОС
 OS_TYPE=$(uname)
@@ -177,6 +177,9 @@ if [ -d "/opt/goinfre/$(whoami)" ]; then
     echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
     echo ""
 fi
+
+# Показывает вес домашней папки и максимум
+echo "📁 Домашняя папка: $(du -sh $HOME 2>/dev/null | cut -f1) / $(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')"
 
 
 
