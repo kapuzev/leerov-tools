@@ -27,6 +27,6 @@ fi
 help() {
     cat "$SCRIPT_DIR/docs/help.txt"
 }
-echo "💡 Введите 'help' для просмотра доступных команд"
+
 
 source $SCRIPT_DIR/vimrc.vim
