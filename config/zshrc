@@ -5,9 +5,9 @@ cd "$SCRIPT_DIR" || return
 
 set +m
 
-# Функция для фонового подсчёта места
-calculate_space() {
-    # Считаем goinfre в фоне
+# Запускаем подсчёт в фоне, но записываем результаты во временный файл
+(
+    # Считаем goinfre
     if [ -d "/opt/goinfre/$(whoami)" ]; then
         goinfre_size=$(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)
         disk_info=$(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null)
@@ -16,25 +16,40 @@ calculate_space() {
         disk_info="N/A"
     fi
     
-    # Считаем домашнюю папку в фоне
+    # Считаем домашнюю папку
     home_size=$(du -sh $HOME 2>/dev/null | cut -f1)
     home_max=$(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')
     
-    # Сохраняем результаты в переменные
-    GOINFRE_SIZE="$goinfre_size"
-    DISK_INFO="$disk_info"
-    HOME_SIZE="$home_size"
-    HOME_MAX="$home_max"
-}
+    # Записываем в файл
+    echo "GOINFRE_SIZE='$goinfre_size'" > /tmp/disk_vars_$$.tmp
+    echo "DISK_INFO='$disk_info'" >> /tmp/disk_vars_$$.tmp
+    echo "HOME_SIZE='$home_size'" >> /tmp/disk_vars_$$.tmp
+    echo "HOME_MAX='$home_max'" >> /tmp/disk_vars_$$.tmp
+    echo "CALC_DONE=1" >> /tmp/disk_vars_$$.tmp
+) >/dev/null 2>&1 &
 
-# Запускаем функцию в фоне
-calculate_space &
-
-# Сохраняем PID фонового процесса
+# Сохраняем PID
 CALC_PID=$!
 
-# Показываем что идёт подсчёт (опционально)
-echo "⏳ Подсчёт места в фоне..." >&2
+# Функция для загрузки переменных в текущую сессию
+load_disk_vars() {
+    local tmp_file="/tmp/disk_vars_$$.tmp"
+    if [ -f "$tmp_file" ]; then
+        source "$tmp_file"
+        rm -f "$tmp_file"
+        return 0
+    fi
+    return 1
+}
+
+# Проверка готовности
+check_disk_vars() {
+    if [ -f "/tmp/disk_vars_$$.tmp" ]; then
+        load_disk_vars
+        return 0
+    fi
+    return 1
+}
 
 
 
