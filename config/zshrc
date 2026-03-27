@@ -224,5 +224,7 @@ echo "📁 Вес вашей папки Goinfre: $GOINFRE_SIZE"
 echo "💾 Диск: $DISK_INFO"
 echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
 
+python3 $SCRIPT_DIR/config/main.py
+
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
