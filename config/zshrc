@@ -219,25 +219,25 @@ fi
 
 fastfetch
 
-# Информация о Goinfre (для 42 School)
-if [ -d "/opt/goinfre/$(whoami)" ]; then
-    echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
-    echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
-    echo ""
-fi
+# # Информация о Goinfre (для 42 School)
+# if [ -d "/opt/goinfre/$(whoami)" ]; then
+#     echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
+#     echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
+#     echo ""
+# fi
 
-# Показывает вес домашней папки и максимум
-echo "📁 Домашняя папка: $(du -sh $HOME 2>/dev/null | cut -f1) / $(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')"
+# # Показывает вес домашней папки и максимум
+# echo "📁 Домашняя папка: $(du -sh $HOME 2>/dev/null | cut -f1) / $(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')"
 
-# Ждём завершения подсчёта (не обязательно, если не нужны сразу данные)
-# wait $CALC_PID 2>/dev/null
+# # Ждём завершения подсчёта (не обязательно, если не нужны сразу данные)
+# # wait $CALC_PID 2>/dev/null
 
-# Теперь можно использовать переменные в любом месте скрипта
-# Пример вывода:
-echo ""
-echo "📁 Вес вашей папки Goinfre: $GOINFRE_SIZE"
-echo "💾 Диск: $DISK_INFO"
-echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
+# # Теперь можно использовать переменные в любом месте скрипта
+# # Пример вывода:
+# echo ""
+# echo "📁 Вес вашей папки Goinfre: $GOINFRE_SIZE"
+# echo "💾 Диск: $DISK_INFO"
+# echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
 
 python3 $SCRIPT_DIR/config/main.py
 
