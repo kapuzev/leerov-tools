@@ -68,7 +68,6 @@ need_sync() {
         return 0
     fi
     
-    log_info "Синхронизация не требуется (hostname не изменился, файл обновлен менее дня назад)"
     return 1
 }
 
@@ -84,7 +83,6 @@ sync_applications() {
         return 1
     fi
     
-    log_info "Проверка приложений в $goinfre_path/$apps_dir"
     
     # Переменные для подсчета операций
     local added_count=0

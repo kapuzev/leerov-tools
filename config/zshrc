@@ -153,6 +153,7 @@ alias py="python3"
 alias python="python3"
 alias pip="pip3"
 alias i="show_disk_info"
+alias u="sync_applications; write_last_hostname; echo synced"
 
 # Полезные алиасы
 alias settings="bash -c \"cd leerov-tools/settings; open 'LT Settings.app'\""
@@ -285,6 +286,8 @@ echo "💡 Введите 'help' для просмотра доступных к
 
 # Точка входа в любую логику на 
 # python3 $SCRIPT_DIR/config/main.py
+
+
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
