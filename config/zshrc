@@ -5,6 +5,39 @@ cd "$SCRIPT_DIR" || return
 
 set +m
 
+# Функция для фонового подсчёта места
+calculate_space() {
+    # Считаем goinfre в фоне
+    if [ -d "/opt/goinfre/$(whoami)" ]; then
+        goinfre_size=$(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)
+        disk_info=$(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null)
+    else
+        goinfre_size="N/A"
+        disk_info="N/A"
+    fi
+    
+    # Считаем домашнюю папку в фоне
+    home_size=$(du -sh $HOME 2>/dev/null | cut -f1)
+    home_max=$(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')
+    
+    # Сохраняем результаты в переменные
+    GOINFRE_SIZE="$goinfre_size"
+    DISK_INFO="$disk_info"
+    HOME_SIZE="$home_size"
+    HOME_MAX="$home_max"
+}
+
+# Запускаем функцию в фоне
+calculate_space &
+
+# Сохраняем PID фонового процесса
+CALC_PID=$!
+
+# Показываем что идёт подсчёт (опционально)
+echo "⏳ Подсчёт места в фоне..." >&2
+
+
+
 # Фоновая синхронизация репозитория (без вывода)
 (
     exec >/dev/null 2>&1
@@ -181,7 +214,15 @@ fi
 # Показывает вес домашней папки и максимум
 echo "📁 Домашняя папка: $(du -sh $HOME 2>/dev/null | cut -f1) / $(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')"
 
+# Ждём завершения подсчёта (не обязательно, если не нужны сразу данные)
+# wait $CALC_PID 2>/dev/null
 
+# Теперь можно использовать переменные в любом месте скрипта
+# Пример вывода:
+echo ""
+echo "📁 Вес вашей папки Goinfre: $GOINFRE_SIZE"
+echo "💾 Диск: $DISK_INFO"
+echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
