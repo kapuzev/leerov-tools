@@ -239,7 +239,8 @@ fastfetch
 # echo "💾 Диск: $DISK_INFO"
 # echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
 
-python3 $SCRIPT_DIR/config/main.py
+# Точка входа в любую логику на 
+# python3 $SCRIPT_DIR/config/main.py
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
