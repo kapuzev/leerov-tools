@@ -4,11 +4,15 @@
 
 ## Установка
 
-```bash
-# Для всех (HTTPS)
-git clone https://github.com/kapuzev/leerov-tools.git ~/leerov-tools && bash ~/leerov-tools/bin/setup.sh
+```
+### Для всех (HTTPS)
 
-# Для меня (SSH)
+```bash
+git clone https://github.com/kapuzev/leerov-tools.git ~/leerov-tools && bash ~/leerov-tools/bin/setup.sh
+```
+
+### Для меня (SSH)
+```bash
 git clone git@github.com:kapuzev/leerov-tools.git ~/leerov-tools && bash ~/leerov-tools/bin/setup.sh
 ```
 
