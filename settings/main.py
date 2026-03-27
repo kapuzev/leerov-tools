@@ -34,7 +34,7 @@ COLORS = {
 
 
 class JsonEditor:
-    """Простой редактор JSON настроек"""
+    """Простой редактор настроек JSON"""
     
     def __init__(self, root):
         self.root = root
@@ -58,7 +58,7 @@ class JsonEditor:
         top_frame.pack(fill=tk.X, padx=10, pady=10)
         
         # Кнопки
-        btn_style = {'bg': COLORS['button_bg'], 'fg': COLORS['button_fg'],
+        btn_style = {'bg': COLORS['bg'], 'fg': COLORS['bg'],
                     'activebackground': COLORS['accent'], 'activeforeground': 'white',
                     'font': ('Segoe UI', 10), 'padx': 15, 'pady': 5,
                     'relief': tk.FLAT, 'bd': 0}
@@ -72,7 +72,7 @@ class JsonEditor:
                                    font=('Segoe UI', 9))
         self.file_label.pack(side=tk.RIGHT, padx=10)
         
-        # Область с прокруткой
+        # Область с прокруткой (без ползунка)
         self.create_scrollable_area()
         
         # Статус бар
@@ -98,41 +98,51 @@ class JsonEditor:
         style.map('TButton', background=[('active', COLORS['accent'])])
         
     def create_scrollable_area(self):
-        """Создание области с прокруткой"""
+        """Создание области с прокруткой (только колесико, без ползунка)"""
         # Контейнер
         self.main_container = tk.Frame(self.root, bg=COLORS['bg'])
         self.main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
-        # Canvas и Scrollbar
+        # Только Canvas, без Scrollbar
         self.canvas = tk.Canvas(self.main_container, bg=COLORS['bg'], 
                                 highlightthickness=0, bd=0)
-        scrollbar = ttk.Scrollbar(self.main_container, orient="vertical", 
-                                  command=self.canvas.yview)
+        self.canvas.pack(side="left", fill="both", expand=True)
         
         # Внутренний фрейм
         self.scrollable_frame = tk.Frame(self.canvas, bg=COLORS['bg'])
         
-        self.canvas.configure(yscrollcommand=scrollbar.set)
         self.canvas_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, 
                                                        anchor="nw", width=self.canvas.winfo_width())
-        
-        self.canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
         
         # Обновление размера
         self.scrollable_frame.bind("<Configure>", self._on_frame_configure)
         self.canvas.bind("<Configure>", self._on_canvas_configure)
         
-        # Колесико мыши
+        # Привязываем колесико мыши к canvas
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
         
+        # Чтобы колесико работало даже когда курсор на canvas
+        self.canvas.bind("<Enter>", self._bind_mousewheel)
+        self.canvas.bind("<Leave>", self._unbind_mousewheel)
+        
+    def _bind_mousewheel(self, event):
+        """При входе в canvas привязываем колесико"""
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        
+    def _unbind_mousewheel(self, event):
+        """При выходе из canvas отвязываем колесико"""
+        self.canvas.unbind_all("<MouseWheel>")
+        
     def _on_frame_configure(self, event=None):
+        """Обновление области прокрутки"""
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         
     def _on_canvas_configure(self, event):
+        """Обновление размера canvas"""
         self.canvas.itemconfig(self.canvas_window, width=event.width)
         
     def _on_mousewheel(self, event):
+        """Обработка колесика мыши"""
         self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         
     def load_settings(self):

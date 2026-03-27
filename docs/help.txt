@@ -12,7 +12,7 @@
   s "сообщение"        — быстрый коммит в develop + push
   push                 — умный пуш с автосообщением (только SSH!)
   pull-repo            — фоновая синхронизация репозитория
-  sync-apps            — синхронизация приложений между goinfre и home
+  u                    — синхронизация приложений между goinfre и home
 
 📝  ПРОВЕРКА КОДА:
   p <url>              — peer-review: клонирование + clang-format + cppcheck + leaks
