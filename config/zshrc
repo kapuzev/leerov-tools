@@ -129,6 +129,7 @@ done
 source "$SCRIPT_DIR/bin/push-repo.sh"
 source "$SCRIPT_DIR/bin/pool-review.sh"
 source "$SCRIPT_DIR/bin/show.sh"
+source "$SCRIPT_DIR/bin/show_copy.sh"
 source "$SCRIPT_DIR/bin/ru2en.sh"
 source "$SCRIPT_DIR/bin/tree.sh"
 
