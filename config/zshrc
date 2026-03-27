@@ -88,8 +88,6 @@ show_disk_info() {
     fi
 }
 
-echo "💡 Введите 'help' для просмотра доступных команд"
-
 
 # Фоновая синхронизация репозитория (без вывода)
 (
@@ -257,6 +255,8 @@ elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
 fi
 
 fastfetch
+echo "💡 Введите 'help' для просмотра доступных команд"
+
 
 # # Информация о Goinfre (для 42 School)
 # if [ -d "/opt/goinfre/$(whoami)" ]; then
