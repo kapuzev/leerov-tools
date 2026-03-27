@@ -103,30 +103,23 @@ sync_applications() {
                     # Ссылка существует, проверяем куда она ведет
                     local target=$(readlink "$home_link")
                     if [ "$target" != "$app" ]; then
-                        log_warning "Ссылка $app_name ведет не туда, обновляем..."
                         rm -f "$home_link"
                         ln -s "$app" "$home_link"
-                        log_success "Обновлена ссылка: $app_name -> $app"
                         ((added_count++))
                     else
-                        log_info "Ссылка существует: $app_name"
                         ((skipped_count++))
                     fi
                 else
                     # Ссылки нет, создаем
-                    log_info "Добавление ссылки для: $app_name"
                     ln -s "$app" "$home_link" 2>/dev/null
                     if [ $? -eq 0 ]; then
-                        log_success "Добавлена ссылка: $app_name -> $app"
                         ((added_count++))
                     else
-                        log_error "Не удалось создать ссылку для: $app_name"
                     fi
                 fi
             fi
         done
     else
-        log_info "Директория $goinfre_path/$apps_dir не существует"
     fi
     
     # Проверяем ссылки в home, которые ведут в goinfre
@@ -140,9 +133,7 @@ sync_applications() {
                 if [[ "$target" == "$goinfre_path/$apps_dir"* ]]; then
                     # Проверяем, существует ли целевое приложение
                     if [ ! -e "$target" ]; then
-                        log_warning "Приложение не существует: $link_name -> $target"
                         rm -f "$link"
-                        log_success "Удалена неработающая ссылка: $link_name"
                         ((removed_count++))
                     fi
                 fi
@@ -150,7 +141,6 @@ sync_applications() {
         done
     fi
     
-    log_info "Статистика: добавлено $added_count, удалено $removed_count, пропущено $skipped_count"
     
     return 0
 }
@@ -159,9 +149,7 @@ sync_applications() {
 write_last_hostname() {
     echo "$CURRENT_HOST" > "$LAST_HOST_FILE" 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_success "Сохранен hostname '$CURRENT_HOST' в $LAST_HOST_FILE"
     else
-        log_error "Не удалось сохранить hostname в $LAST_HOST_FILE"
     fi
 }
 
