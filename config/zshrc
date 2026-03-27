@@ -132,6 +132,7 @@ source "$SCRIPT_DIR/bin/show.sh"
 source "$SCRIPT_DIR/bin/show_copy.sh"
 source "$SCRIPT_DIR/bin/ru2en.sh"
 source "$SCRIPT_DIR/bin/tree.sh"
+source "$SCRIPT_DIR/bin/sync_apps.sh"
 
 # Создаем папку с правами 755 (для 42 School)
 if [ -d "/opt/goinfre" ]; then
