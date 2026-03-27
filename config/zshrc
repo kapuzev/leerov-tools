@@ -254,6 +254,9 @@ elif [ "$OS_TYPE" = "Linux" ] && [ -f "$SCRIPT_DIR/config/linuxrc" ]; then
     source "$SCRIPT_DIR/config/linuxrc"
 fi
 
+help() {
+    cat "$SCRIPT_DIR/docs/help.txt"
+}
 fastfetch
 echo "💡 Введите 'help' для просмотра доступных команд"
 
