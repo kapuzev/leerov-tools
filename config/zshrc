@@ -53,6 +53,29 @@ check_disk_vars() {
 
 # Функция для вывода информации о диске (после загрузки переменных)
 show_disk_info() {
+    # Цикл проверки готовности (ждём до 2 секунд)
+    local max_wait=20  # 20 попыток по 0.1 сек = 2 секунды
+    local waited=0
+    
+    while [ $waited -lt $max_wait ]; do
+        # Проверяем, загружены ли переменные
+        if [ -n "$GOINFRE_SIZE" ] && [ -n "$HOME_SIZE" ]; then
+            break
+        fi
+        
+        # Проверяем, есть ли файл с результатами
+        if [ -f "/tmp/disk_vars_$$.tmp" ]; then
+            load_disk_vars
+            if [ -n "$GOINFRE_SIZE" ] && [ -n "$HOME_SIZE" ]; then
+                break
+            fi
+        fi
+        
+        sleep 0.1
+        waited=$((waited + 1))
+    done
+    
+    # Выводим информацию
     if [ -n "$GOINFRE_SIZE" ] && [ -n "$DISK_INFO" ] && [ -n "$HOME_SIZE" ] && [ -n "$HOME_MAX" ]; then
         if [ "$GOINFRE_SIZE" != "N/A" ]; then
             echo "📁 Вес вашей папки Goinfre: $GOINFRE_SIZE"
@@ -61,7 +84,7 @@ show_disk_info() {
         fi
         echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
     else
-        echo "⏳ Данные ещё не загружены. Запустите load_disk_vars сначала."
+        echo "⏳ Данные ещё не загружены. Попробуйте позже."
     fi
 }
 
