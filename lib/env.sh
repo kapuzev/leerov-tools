@@ -8,6 +8,8 @@ export HOMEBREW_CASK_OPTS="--appdir=/Users/$(whoami)/goinfre/Applications"
 
 export ANDROID_NDK_HOME="/opt/goinfre/$(whoami)/homebrew/share/android-ndk"
 
+export OLLAMA_MODELS=/goinfre/$(whoami)/ollama/models
+
 # Android в goinfre
 export ANDROID_HOME=/opt/goinfre/$(whoami)/Android/sdk
 export GRADLE_USER_HOME=/opt/goinfre/$(whoami)/.gradle
