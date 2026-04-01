@@ -39,6 +39,7 @@
 🐚  АЛИАСЫ:
   la, ls -la
   gs, ga, gc, gp, gl  — git команды
+  gdel                 — удалить локальные ветки без удалённой (stale branches)
   settings             — открыть настройки LT Settings.app
   joke <секунд>        — прикол с Mission Control
 
