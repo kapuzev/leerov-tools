@@ -35,15 +35,24 @@ function fj() {
     cat > "$tmpfile" << 'EOF'
 # INSTRUCTIONS FOR AI
 #
-# FIRST, analyze the code below and create a Mermaid architecture diagram.
-# Include:
-# - File structure with dependencies
-# - Function call hierarchy
-# - Data flow between components
-# - Key modules and their relationships
+# === PROJECT STRUCTURE ===
 #
-# After generating the diagram, wait for my next instruction.
-# Do not generate patches yet.
+EOF
+
+    (cd "$HOME/leerov-tools" && tree) >> "$tmpfile" 2>/dev/null
+
+    cat >> "$tmpfile" << 'EOF'
+#
+# === END OF PROJECT STRUCTURE ===
+#
+# Now wait. Do nothing else.
+# Do not explain anything.
+# Do not add any comments or extra text.
+# Just wait for my next message.
+#
+# Below is the ap format specification and the current code.
+# After I tell you what to change, generate ONLY the ap patch file.
+# Nothing else. Just the patch.
 #
 # === AP FORMAT SPECIFICATION ===
 #
@@ -54,9 +63,25 @@ EOF
     echo -e "\n\n=== CURRENT CODE (with line numbers) ===\n" >> "$tmpfile"
     sc --stdout >> "$tmpfile" 2>&1
 
+    cat >> "$tmpfile" << 'EOF'
+
+# === WAITING FOR TASK ===
+#
+# I have analyzed the project structure and code.
+# I am ready to generate AP patches.
+# Just tell me what to change.
+#
+# === PROJECT STRUCTURE (again) ===
+#
+EOF
+
+    (cd "$HOME/leerov-tools" && tree) >> "$tmpfile" 2>/dev/null
+
+    echo -e "\n# === END ===" >> "$tmpfile"
+
     cat "$tmpfile" | pbcopy
     rm "$tmpfile"
-    echo "✅ Copied to clipboard: instructions + ap.md + sc output"
+    echo "✅ Copied to clipboard: tree + instructions + ap.md + sc output"
 }
 
 function jf() {
