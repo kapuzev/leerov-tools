@@ -39,7 +39,7 @@ function fj() {
 #
 EOF
 
-    (cd "$HOME/leerov-tools" && tree) >> "$tmpfile" 2>/dev/null
+    tree >> "$tmpfile" 2>/dev/null
 
     cat >> "$tmpfile" << 'EOF'
 #
@@ -75,7 +75,7 @@ EOF
 #
 EOF
 
-    (cd "$HOME/leerov-tools" && tree) >> "$tmpfile" 2>/dev/null
+    tree >> "$tmpfile" 2>/dev/null
 
     echo -e "\n# === END ===" >> "$tmpfile"
 
