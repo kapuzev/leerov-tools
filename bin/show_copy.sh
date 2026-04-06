@@ -2,7 +2,11 @@
 showcopy() {
     local dir="${1:-.}"
     local temp_file=$(mktemp)
-    
+    local stdout_only=0
+    if [[ "$1" == "--stdout" ]]; then
+        stdout_only=1
+        dir="${2:-.}"
+    fi
     # Расширения текстовых файлов
     local text_exts=(
         # Исходный код (языки программирования)
@@ -129,24 +133,29 @@ showcopy() {
         echo "" >> "$temp_file"
     done < "$temp_file.list"
     
-    # Копируем в буфер обмена
-    if command -v pbcopy &> /dev/null; then
-        cat "$temp_file" | pbcopy
-        echo "Скопировано $file_count файлов с нумерацией строк"
-    elif command -v xclip &> /dev/null; then
-        cat "$temp_file" | xclip -selection clipboard
-        echo "Скопировано $file_count файлов с нумерацией строк"
-    elif command -v clip.exe &> /dev/null; then
-        cat "$temp_file" | clip.exe
-        echo "Скопировано $file_count файлов с нумерацией строк"
-    else
-        echo "Не найдена команда для копирования в буфер обмена"
+    if [[ $stdout_only -eq 1 ]]; then
         cat "$temp_file"
+    else
+        # Копируем в буфер обмена
+        if command -v pbcopy &> /dev/null; then
+            cat "$temp_file" | pbcopy
+            echo "Скопировано $file_count файлов с нумерацией строк"
+        elif command -v xclip &> /dev/null; then
+            cat "$temp_file" | xclip -selection clipboard
+            echo "Скопировано $file_count файлов с нумерацией строк"
+        elif command -v clip.exe &> /dev/null; then
+            cat "$temp_file" | clip.exe
+            echo "Скопировано $file_count файлов с нумерацией строк"
+        else
+            echo "Не найдена команда для копирования в буфер обмена"
+            cat "$temp_file"
+        fi
     fi
     
     # Очистка
     rm -f "$temp_file" "$temp_file.list"
 }
+
 
 # Алиас для быстрого вызова
 alias sc="showcopy"
