@@ -288,7 +288,7 @@ echo "💡 Введите 'help' для просмотра доступных к
 # Точка входа в любую логику на 
 # python3 $SCRIPT_DIR/config/main.py
 # ap tools
-export AP_HOME="/goinfre/$(whoami)/ap"
+export AP_HOME="/opt/goinfre/$(whoami)/ap"
 
 # Function to ensure ap is installed
 _ensure_ap() {
