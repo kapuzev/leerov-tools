@@ -1,6 +1,7 @@
 #!/bin/bash
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$HOME/leerov-tools"
+echo $SCRIPT_DIR
 cd "$SCRIPT_DIR" || return
 
 set +m
@@ -90,6 +91,7 @@ show_disk_info() {
 
 
 # Фоновая синхронизация репозитория (без вывода)
+#
 (
     exec >/dev/null 2>&1
     sleep 2
@@ -266,32 +268,9 @@ fastfetch
 echo "💡 Введите 'help' для просмотра доступных команд"
 
 
-# # Информация о Goinfre (для 42 School)
-# if [ -d "/opt/goinfre/$(whoami)" ]; then
-#     echo "📁 Вес вашей папки Goinfre: $(du -sh /opt/goinfre/$(whoami) 2>/dev/null | cut -f1)"
-#     echo "💾 Диск: Использовано/Свободно/Всего: $(df -h /opt/goinfre/$(whoami) 2>/dev/null | tail -1 | awk '{print $3 " / " $4 " / " $2 " (" $5 ")"}' 2>/dev/null || echo "N/A")"
-#     echo ""
-# fi
-
-# # Показывает вес домашней папки и максимум
-# echo "📁 Домашняя папка: $(du -sh $HOME 2>/dev/null | cut -f1) / $(df -h $HOME 2>/dev/null | tail -1 | awk '{print $2}')"
-
-# # Ждём завершения подсчёта (не обязательно, если не нужны сразу данные)
-# # wait $CALC_PID 2>/dev/null
-
-# # Теперь можно использовать переменные в любом месте скрипта
-# # Пример вывода:
-# echo ""
-# echo "📁 Вес вашей папки Goinfre: $GOINFRE_SIZE"
-# echo "💾 Диск: $DISK_INFO"
-# echo "📁 Домашняя папка: $HOME_SIZE / $HOME_MAX"
-
 # Точка входа в любую логику на 
 # python3 $SCRIPT_DIR/config/main.py
 # ap tools
-
-
-
 
 # Возвращаемся в исходную директорию
 cd "$CURRENT_DIR" || return
